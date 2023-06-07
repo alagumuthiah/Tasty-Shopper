@@ -15,6 +15,10 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 - Fetch the Recipes from an external API [ninjas-API](https://api-ninjas.com/api/recipe)
 - Allow authorization of users using OAuth and JSON web tokens
 
+# Dependecies for the Application
+
+- Material UI - for the UI components (NavBar,Card)
+
 # Steps to test and build the application
 
 ### `npm test`
