@@ -4,8 +4,7 @@
 
 .nav--links{
   display:flex;
-  justify-content: space-between;
-  margin-left:30px;
+  justify-content: space-evenly;
 }
 
 .nav--links > a{
@@ -29,5 +28,11 @@
   color: black;
 }
 
+.card--div{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  flex-basis: auto;
+}
 
 
