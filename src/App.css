@@ -35,4 +35,6 @@
   flex-basis: auto;
 }
 
-
+form > div{
+  margin:20px;
+}

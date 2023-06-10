@@ -22,7 +22,11 @@ function NavBar(){
                             <Typography>Other Recipes</Typography>
                         </Link>
                    </div>
-                    {isAuthenticated && <Button size="medium" color="primary" variant="contained">Login</Button>}
+                    {isAuthenticated &&
+                    <Link to="/login">
+                      <Button size="medium" color="primary" variant="contained" >Login</Button>
+                    </Link>
+                    }
                </Toolbar>
            </AppBar>
         </div>
