@@ -18,7 +18,7 @@ function NavBar(){
                         <Link className="link--navbar" to="/about">
                             <Typography>About</Typography>
                         </Link>
-                        <Link className="link--navbar" to="/recipe/:id">
+                        <Link className="link--navbar" to="/recipes">
                             <Typography>Other Recipes</Typography>
                         </Link>
                    </div>
