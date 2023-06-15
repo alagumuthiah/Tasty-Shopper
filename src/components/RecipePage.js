@@ -11,7 +11,9 @@ function RecipePage(){
     }else{
 
     }*/
-    const [searchText,setSearchText] = React.useState('recipes');
+
+    /* Write the aPI call in a separate function and import . Use it in two routes*/
+    const [searchText,setSearchText] = React.useState('');
     const [recipeData,setRecipeData] = React.useState([]);
 
     React.useEffect(()=>{
@@ -25,7 +27,9 @@ function RecipePage(){
             });
             setRecipeData(response.data);
         }
-        fetchRecipes();
+        if(searchText.length>0){
+            fetchRecipes();
+        }
 
     },[searchText])
 
