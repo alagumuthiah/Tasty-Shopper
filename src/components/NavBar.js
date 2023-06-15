@@ -12,13 +12,13 @@ function NavBar(){
                         <Link className="link--navbar"to="/">
                             <Typography>Home</Typography>
                         </Link>
-                        <Link className="link--navbar" to="/recipes">
+                        <Link className="link--navbar" to="/myrecipes">
                             <Typography>My Recipes</Typography>
                         </Link>
                         <Link className="link--navbar" to="/about">
                             <Typography>About</Typography>
                         </Link>
-                        <Link className="link--navbar" to="/recipes">
+                        <Link className="link--navbar" to="/otherrecipes">
                             <Typography>Other Recipes</Typography>
                         </Link>
                    </div>

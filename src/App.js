@@ -1,7 +1,8 @@
 import './App.css';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import AboutComponent from './components/AboutComponent';
-import RecipePage from './components/RecipePage';
+import MyRecipes from './components/MyRecipes';
+import OtherRecipes from './components/OtherRecipes';
 import RecipeDetails from './components/RecipeDetails';
 import NavBar from './components/NavBar';
 import LoginComponent from './components/LoginComponent';
@@ -15,9 +16,10 @@ function App() {
             <NavBar/>
       </header>
       <Routes>
-        <Route path="/" element={<RecipePage/>}/>
+        <Route path="/" element={<MyRecipes/>}/>
         <Route path="/about" element={<AboutComponent/>}/>
-        <Route path="/recipes" element={<RecipePage/>}/>
+        <Route path="/myrecipes" element={<MyRecipes/>}/>
+        <Route path="/otherrecipes" element={<OtherRecipes/>}/>
         <Route path="/recipe/details" element={<RecipeDetails/>}/>
         <Route path="/login" element={<LoginComponent/>}/>
         <Route path="/signup" element={<SignUpComponent/>}/>
