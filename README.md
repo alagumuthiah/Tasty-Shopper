@@ -9,10 +9,23 @@ This Application was bootstrapped with [Create React App](https://github.com/fac
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
+# Technologies Used
+
+- React
+- Javascript
+- HTML
+- CSS
+
 # Features of the App
 
-- Manage your own Recipes by supporting CRUD operations
-- Fetch the Recipes from an external API [ninjas-API](https://api-ninjas.com/api/recipe)
+- Users can create an account(sign up), login to their account and log out.
+- Users can create their own Recipes.
+- Users can edit their Recipes.
+- Users can delete the recipes that they created.
+- Users can view their own recipes and view recipes fetched from external API
+- Recipes has a search functionality with the query string.
+- Users can view custom recipes created by other users if the custom recipes are made public.
+- Recipes are fetched from an external API [ninjas-API](https://api-ninjas.com/api/recipe)
 - Allow authorization of users using OAuth and JSON web tokens
 
 # Dependecies for the Application
