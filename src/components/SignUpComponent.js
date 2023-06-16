@@ -14,7 +14,7 @@ function SignUpComponent(){
         summary:""
     }
 
-    //include Phone number
+    //how to use ButtonComponent - check
     const [signUpData,setSignUpData] = React.useState(defaultValues);
 
     function handleChange(event){

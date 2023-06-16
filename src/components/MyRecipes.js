@@ -1,4 +1,5 @@
 import RecipeCard from "./RecipeCard";
+import {Link} from 'react-router-dom';
 import { Typography,TextField } from "@mui/material";
 import React from "react";
 import fetchRecipes from '../shared/fetchData';
@@ -30,7 +31,10 @@ function MyRecipes(){
 
     return(
         <div>
-            <h1>Recipe Page</h1>
+            <div>
+                <h1>Recipe Page</h1>
+                <Link to="/create/recipe">Create Recipe</Link>
+            </div>
             <div>
             <Typography>Login to view custom recipes</Typography>
             <div>

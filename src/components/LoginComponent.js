@@ -1,4 +1,5 @@
-import {TextField, Button, Typography } from "@mui/material";
+import {TextField, Typography } from "@mui/material";
+import ButtonComponent from '../components/ButtonComponent';
 import {Link} from 'react-router-dom';
 import React from 'react';
 
@@ -50,7 +51,7 @@ function LoginComponent(){
                 value={formData.password}/>
             </div>
             <div>
-                <Button variant="contained" type="submit">Login</Button>
+                <ButtonComponent text="Login"/>
             </div>
             <div>
                 <Typography>Don't have an account? <Link to="/signup">Sign Up</Link></Typography>

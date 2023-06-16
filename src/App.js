@@ -7,6 +7,7 @@ import RecipeDetails from './components/RecipeDetails';
 import NavBar from './components/NavBar';
 import LoginComponent from './components/LoginComponent';
 import SignUpComponent from './components/SignUpComponent';
+import FormComponent from './components/FormComponent';
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
         <Route path="/recipe/details" element={<RecipeDetails/>}/>
         <Route path="/login" element={<LoginComponent/>}/>
         <Route path="/signup" element={<SignUpComponent/>}/>
+        <Route path="/create/recipe" element={<FormComponent/>}/>
+        <Route path="/update/recipe" render={(props)=> <FormComponent {...props}/>}/>
       </Routes>
     </BrowserRouter>
 
