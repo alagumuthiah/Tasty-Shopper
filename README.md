@@ -28,9 +28,46 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 - Recipes are fetched from an external API [ninjas-API](https://api-ninjas.com/api/recipe)
 - Allow authorization of users using OAuth and JSON web tokens
 
+# To do features
+
+- Provide a random dish based on tags(breakfast, dinner, etc)
+- Compute the grocery list for a week by selecting the recipes to cook for the week
+- Calculate the calorie of a recipe with the nutrition API
+
 # Dependecies for the Application
 
 - Material UI - for the UI components (NavBar,Card)
+
+# Database Schema
+
+### Recipe
+
+- id -> primary key
+- title -> varchar(30)
+- cuisine -> varchar(15)
+- servings -> number
+- isPublic -> boolean
+- instructions
+
+### Ingredient
+
+- id -> primary key
+- name -> varchar - name of the ingredient
+
+### Unit
+
+- id -> primary key
+- name -> varchar (Unit- cup, tablespoon, spoon, ml, grams)
+
+### RecipeIngredient
+
+- id -> primary key
+- recipeId -> foreign key references Recipe
+- ingredientId -> foreign key references Ingredients
+- quantity - float
+- unitId - foreign key references Units
+
+Multiple entries in RecipeIngredient table for a recipe
 
 # Steps to test and build the application
 
