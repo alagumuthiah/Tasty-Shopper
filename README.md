@@ -40,6 +40,15 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
 # Database Schema
 
+### User
+
+- id  -> primary key
+- username -> varchar
+- firstname -> varchar
+- lastname -> varchar
+- email -> varchar
+- password -> varchar
+
 ### Recipe
 
 - id -> primary key
