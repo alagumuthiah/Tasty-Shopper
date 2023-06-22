@@ -1,5 +1,5 @@
 import './App.css';
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AboutComponent from './components/AboutComponent';
 import MyRecipes from './components/MyRecipes';
 import OtherRecipes from './components/OtherRecipes';
@@ -14,18 +14,18 @@ function App() {
 
     <BrowserRouter>
       <header>
-            <NavBar/>
+        <NavBar />
       </header>
       <Routes>
-        <Route path="/" element={<MyRecipes/>}/>
-        <Route path="/about" element={<AboutComponent/>}/>
-        <Route path="/myrecipes" element={<MyRecipes/>}/>
-        <Route path="/otherrecipes" element={<OtherRecipes/>}/>
-        <Route path="/recipe/details" element={<RecipeDetails/>}/>
-        <Route path="/login" element={<LoginComponent/>}/>
-        <Route path="/signup" element={<SignUpComponent/>}/>
-        <Route path="/create/recipe" element={<FormComponent/>}/>
-        <Route path="/update/recipe" render={(props)=> <FormComponent {...props}/>}/>
+        <Route path="/" element={<MyRecipes />} />
+        <Route path="/about" element={<AboutComponent />} />
+        <Route path="/myrecipes" element={<MyRecipes />} />
+        <Route path="/otherrecipes" element={<OtherRecipes />} />
+        <Route path="/recipe/details" element={<RecipeDetails />} />
+        <Route path="/login" element={<LoginComponent />} />
+        <Route path="/signup" element={<SignUpComponent />} />
+        <Route path="/create/recipe" element={<FormComponent />} />
+        <Route path="/update/recipe" render={(props) => <FormComponent {...props} />} />
       </Routes>
     </BrowserRouter>
 
