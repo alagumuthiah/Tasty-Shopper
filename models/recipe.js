@@ -1,8 +1,13 @@
 import { sequelize } from '../config/db';
 import { DataTypes } from 'sequelize';
 
+// enum - Unit (instead of table)
+// Recipe belongstoMany Ingredients;
+/*check how to store Image file type in sequelize
+Recipe belongsToUser*/
+
 const Recipe = sequelize.define(
-    "recipe", {
+    "Recipe", {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -23,9 +28,18 @@ const Recipe = sequelize.define(
     },
     instructions: {
         type: DataTypes.ARRAY(DataTypes.STRING)
+    },
+    userId: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: 'Users',
+            key: 'id'
+        }
     }
 }
 )
 
+Recipe.belongsTo(models.User);
+Recipe.belongsToMany(models.Ingredient, { through: 'RecipeIngredient' });
 
 export default Recipe;

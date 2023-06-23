@@ -2,7 +2,7 @@ import { sequelize } from '../config/db';
 import { DataTypes } from 'sequelize';
 
 /*
-
+User hasMany Recipes
 */
 const User = sequelize.define('User', {
     id: {
@@ -30,5 +30,7 @@ const User = sequelize.define('User', {
         allowNull: false
     }
 })
+
+User.hasMany(models.Recipe, { foreignKey: 'userId' });
 
 export default User;

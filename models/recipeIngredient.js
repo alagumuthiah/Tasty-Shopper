@@ -1,30 +1,33 @@
 import { sequelize } from '../config/db';
 import { DataTypes } from 'sequelize';
 
-const RecipeIngredient = sequelize.define("recipeIngredient", {
+const units = ["cup", "teaspoon", "tablespoon", "ml", "liters", "grams", "kilograms", "oz"];
+const RecipeIngredient = sequelize.define("RecipeIngredient", {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
     },
-    userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'User' }
-    },
     recipeId: {
         type: DataTypes.INTEGER,
-        references: { model: 'Recipe' }
+        references: {
+            model: 'Recipes',
+            key: 'id'
+        }
     },
     ingredientId: {
         type: DataTypes.INTEGER,
-        references: { model: 'Ingredient' }
+        references: {
+            model: 'Ingredients',
+            key: 'id'
+        }
     },
-    unitId: {
-        type: DataTypes.INTEGER,
-        references: { model: 'Unit' }
+    unit: {
+        type: DataTypes.ENUM(units)
     },
     quantity: {
         type: DataTypes.FLOAT
     }
 })
+
+export default RecipeIngredient;
