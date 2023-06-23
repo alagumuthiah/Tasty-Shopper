@@ -25,7 +25,7 @@ function App() {
         <Route path="/login" element={<LoginComponent />} />
         <Route path="/signup" element={<SignUpComponent />} />
         <Route path="/create/recipe" element={<FormComponent />} />
-        <Route path="/update/recipe" render={(props) => <FormComponent {...props} />} />
+        <Route path="/update/recipe/:recipeId" element={<FormComponent />} />
       </Routes>
     </BrowserRouter>
 

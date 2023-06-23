@@ -32,6 +32,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
 - Provide a random dish based on tags(breakfast, dinner, etc)
 - Compute the grocery list for a week by selecting the recipes to cook for the week
+- When clicking the add option in the other recipes, it will be added to my recipes (CREATE a recipe using POST Recipe API)
 - Calculate the calorie of a recipe with the nutrition API
 
 # Dependecies for the Application
