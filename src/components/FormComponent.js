@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation, useParams } from 'react-router';
 import { TextField, Typography, Button, FormControl, Select, MenuItem, FormLabel, Radio, RadioGroup, FormControlLabel } from '@mui/material';
+import { measurements, cuisineOptions, ingredientList } from '../data/sampleSharedData';
 
 //check how to handle File Upload and get the data
 //handle change and handlechangedata index - how to use the same fuction to handle changes
@@ -17,9 +18,8 @@ function FormComponent() {
         image: "",
         isPublic: ""
     }
-    const cuisineOptions = ["Indian", "Mexican", "Thai", "Chinese", "American", "Italian"];
-    const ingredientList = ["Potato", "Milk", "Mushroom", "Paneer", "Tomato", "Onion"]; //later to be populated with data from database
-    const measurements = ["cup", "teaspoon", "tablespoon", "ml", "liters", "grams", "kilograms", "oz"]; //later to be populated with data from database
+    
+
     const [recipeData, setRecipeData] = React.useState(defaultValues);
     //to prevent rendering of the component n number of times, we need to use useEffect to update the form with the recipe Data when the form is rendered as a update component
     const location = useLocation(); //to get the data passed from the component

@@ -11,7 +11,7 @@ export default function RecipeCard(props) {
           <CardMedia sx={{ maxHeight: 150 }} component="img" image={imgUrl} alt={props.recipe.title} />
           <CardContent>
             <Typography variant="h4"> {props.recipe.title}</Typography>
-            <Typography variant="body"> {props.recipe.servings} </Typography>
+            <Typography variant="body"> {props.recipe.cuisine} </Typography>
           </CardContent>
         </CardActionArea>
 

@@ -2,19 +2,22 @@ import RecipeCard from "./RecipeCard";
 import { Link } from 'react-router-dom';
 import { Typography, TextField } from "@mui/material";
 import React from "react";
-import fetchRecipes from '../shared/fetchData';
+//import fetchRecipes from '../shared/fetchData';
+import recipes from '../data/sampleRecipeData';
 
 function MyRecipes() {
 
-    /* Write the API call in a separate function and import . Use it in two routes*/
+    /* Import the sample data created and populate the data for my recipes with the sample data*/
     const [searchText, setSearchText] = React.useState('');
     const [recipeData, setRecipeData] = React.useState([]);
-    const url = 'https://api.api-ninjas.com/v1/recipe';
     React.useEffect(() => {
-        if (searchText.length > 0) {
+        /*Update the useEffect by the API call, after creating the API*/
+        /*if (searchText.length > 0) {
             const response = fetchRecipes(url, searchText);
             response.then(data => setRecipeData(data));
-        }
+        }*/
+        console.log(recipes);
+        setRecipeData(recipes);
 
     }, [searchText])
 
