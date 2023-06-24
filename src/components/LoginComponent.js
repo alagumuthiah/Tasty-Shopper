@@ -1,26 +1,25 @@
-import {TextField, Typography } from "@mui/material";
+import { TextField, Typography } from "@mui/material";
 import ButtonComponent from '../components/ButtonComponent';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import React from 'react';
 
-function LoginComponent(){
+function LoginComponent() {
 
     const defaultValues = {
-        username:"",
-        password:""
+        username: "",
+        password: ""
     }
     const [formData, setFormData] = React.useState(defaultValues);
 
-    function handleChange(event){
-        console.log('Change');
-        setFormData((prevFormData)=>({
+    function handleChange(event) {
+        setFormData((prevFormData) => ({
             ...prevFormData,
-            [event.target.name]:event.target.value,
+            [event.target.name]: event.target.value,
         }))
     }
 
 
-    function handleSubmit(event){
+    function handleSubmit(event) {
         console.log(event);
         event.preventDefault();
         setFormData(defaultValues)
@@ -29,29 +28,29 @@ function LoginComponent(){
 
 
     //Use useEffect to send the data to the database and authenticate the user
-    return(
+    return (
         <form onSubmit={handleSubmit}>
             <Typography>Login to view custom recipes</Typography>
             <div>
                 <TextField
-                id="username"
-                name="username"
-                type="text"
-                onChange={handleChange}
-                label="Username"
-                value={formData.username}/>
+                    id="username"
+                    name="username"
+                    type="text"
+                    onChange={handleChange}
+                    label="Username"
+                    value={formData.username} />
             </div>
             <div>
                 <TextField
-                id="password"
-                name="password"
-                type="password"
-                onChange={handleChange}
-                label="Password"
-                value={formData.password}/>
+                    id="password"
+                    name="password"
+                    type="password"
+                    onChange={handleChange}
+                    label="Password"
+                    value={formData.password} />
             </div>
             <div>
-                <ButtonComponent text="Login"/>
+                <ButtonComponent text="Login" />
             </div>
             <div>
                 <Typography>Don't have an account? <Link to="/signup">Sign Up</Link></Typography>

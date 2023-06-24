@@ -20,20 +20,18 @@ function RecipeDetails() {
         ingredients = selectedRecipe.ingredients.split('|');
 
     }
-    const dummyRecipeId = 101;
-    const updateRecipes = { //this is to mock up the data for updating the recipe
-        title: "Potato fry",
-        servings: 3,
-        cuisine: "Indian",
-        instructions: ["Boil Potatoes", "Add Spices", "Roast the potatoes and garnish and serve"],
-        ingredients: [{ name: 'Potato', quantity: '200', measurement: 'grams' },
-        { name: 'Onion', quantity: '250', measurement: 'grams' },
-        { name: 'Tomato', quantity: '300', measurement: 'grams' }],
-        image: "",
-        isPublic: "Yes"
+
+    //Get the value from local storage , convert it to an array and add the new element to the localstorage
+    //Check on how localstorage has to be cleared after closing the tab and reopening
+    function handleShoppingList(event) {
+        const list = JSON.parse(localStorage.getItem("shoppingList") || "[]");
+        list.push(selectedRecipe.title);
+        console.log(list);
+        localStorage.setItem("shoppingList", JSON.stringify(list));
     }
+
     return (
-        //update this recipe detail rendering based on the recipe format when recipe retrived from database.
+        //update this recipe detail rendering based on the recipe format when recipe retrived from database if required.
         <div>
             <h1>Recipe Details</h1>
             <h2>Recipe Title:{selectedRecipe.title}</h2>
@@ -60,6 +58,8 @@ function RecipeDetails() {
                     <Button variant="contained" type="submit">UPDATE</Button>
                 </Link>
             }
+            <Button variant="contained" color="secondary"
+                onClick={handleShoppingList}>Add to ShoppingList</Button>
 
         </div>
     )

@@ -8,6 +8,7 @@ import NavBar from './components/NavBar';
 import LoginComponent from './components/LoginComponent';
 import SignUpComponent from './components/SignUpComponent';
 import FormComponent from './components/FormComponent';
+import ShoppingList from './components/ShoppingList';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/signup" element={<SignUpComponent />} />
         <Route path="/create/recipe" element={<FormComponent />} />
         <Route path="/update/recipe/:recipeId" element={<FormComponent />} />
+        <Route path="/shoppinglist" element={<ShoppingList />} />
       </Routes>
     </BrowserRouter>
 

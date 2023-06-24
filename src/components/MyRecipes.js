@@ -28,7 +28,6 @@ function MyRecipes() {
     })
 
     const handleChange = (event) => {
-        console.log('event changed');
         setSearchText(event.target.value);
     }
 

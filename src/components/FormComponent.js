@@ -18,7 +18,7 @@ function FormComponent() {
         image: "",
         isPublic: ""
     }
-    
+
 
     const [recipeData, setRecipeData] = React.useState(defaultValues);
     //to prevent rendering of the component n number of times, we need to use useEffect to update the form with the recipe Data when the form is rendered as a update component
@@ -108,7 +108,6 @@ function FormComponent() {
     }
 
     function handleChangeIngredients(event, index) {
-        console.log('change in ingredients fields');
         const inst = recipeData.ingredients;
         inst[index][event.target.name] = event.target.value;
         setRecipeData((prevData) => ({
