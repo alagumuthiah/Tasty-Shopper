@@ -1,4 +1,4 @@
-
+//To store the shopping data in database, Clear shopping list button - to delete the shopping list
 function ShoppingList() {
     const list = JSON.parse(localStorage.getItem("shoppingList") || "[]");
     const listOfShoppingItems = list.length > 0 ?

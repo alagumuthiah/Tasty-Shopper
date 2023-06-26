@@ -7,7 +7,7 @@ import fetchRecipes from '../shared/fetchData';
 function RecipePage() {
 
     /* Write the API call in a separate function and import . Use it in two routes*/
-    const [searchText, setSearchText] = React.useState(JSON.parse(localStorage.getItem('searchText')) || '');
+    const [searchText, setSearchText] = React.useState(JSON.parse(sessionStorage.getItem('searchText')) || '');
     const [recipeData, setRecipeData] = React.useState([]);
     const url = 'https://api.api-ninjas.com/v1/recipe';
     React.useEffect(() => {
@@ -17,7 +17,7 @@ function RecipePage() {
         } else {
             setRecipeData([]);
         }
-        localStorage.setItem('searchText', JSON.stringify(searchText));
+        sessionStorage.setItem('searchText', JSON.stringify(searchText));
 
 
     }, [searchText])

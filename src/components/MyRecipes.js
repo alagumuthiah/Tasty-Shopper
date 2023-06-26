@@ -16,9 +16,15 @@ function MyRecipes() {
             const response = fetchRecipes(url, searchText);
             response.then(data => setRecipeData(data));
         }*/
-        console.log(recipes);
-        setRecipeData(recipes);
-
+        if (searchText.length > 0) {
+            //search in based on the recipe title
+            const filterRecipe = recipes.filter((recipe) => {
+                return recipe['title'].toLowerCase().includes(searchText);
+            })
+            setRecipeData(filterRecipe);
+        } else {
+            setRecipeData(recipes)
+        }
     }, [searchText])
 
     const recipeCards = recipeData.map((recipe) => {
