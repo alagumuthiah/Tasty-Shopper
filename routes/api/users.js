@@ -24,7 +24,7 @@ userRoute.post('/signup', function (req, res) {
 
     const payload = { username }; //claims to be used to create a JSON token
     const token = jwt.sign(payload, secretKey, {
-        expiresIn: '180s'
+        expiresIn: '8h'
     });
     res.cookie('token', token);
     console.log(token);
@@ -36,7 +36,7 @@ userRoute.post('/login', function (req, res) {
     console.log(username, password);
     const payload = { username };
     const token = jwt.sign(payload, secretKey, {
-        expiresIn: '1h'
+        expiresIn: '8h'
     });
     res.cookie('token', token, { httpOnly: true });
     console.log(token);

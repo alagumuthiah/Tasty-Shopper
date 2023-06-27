@@ -6,11 +6,11 @@ const authenticate = ((req, res, next) => {
     const token = req.cookies.token;
     console.log(token);
     if (token) {
-        jwt.verify(token, secretKey, function (res, err) {
+        jwt.verify(token, secretKey, function (err, decoded) {
             if (err) {
                 res.status(401).send('Unauthorized:Invalid Token');
             } else {
-                req.username = res.username;
+                req.username = decoded.username;
                 next();
             }
         })
