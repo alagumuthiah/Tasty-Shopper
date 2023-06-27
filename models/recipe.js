@@ -39,7 +39,9 @@ const Recipe = sequelize.define(
 }
 )
 
-Recipe.belongsTo(models.User);
-Recipe.belongsToMany(models.Ingredient, { through: 'RecipeIngredient' });
+Recipe.associate = (models) => {
+    Recipe.belongsTo(models.User);
+    Recipe.belongsToMany(models.Ingredient, { through: 'RecipeIngredient' });
+}
 
 export default Recipe;

@@ -1,6 +1,6 @@
 import express from 'express';
-import ingredientRoute from './routes/ingredientRouter';
-import recipeRoute from './routes/recipeRouter';
+import ingredientRoute from './routes/api/ingredientRouter';
+import recipeRoute from './routes/api/recipeRouter';
 
 const app = express();
 app.use("/recipes", recipeRoute);

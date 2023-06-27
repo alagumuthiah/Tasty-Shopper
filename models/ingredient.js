@@ -23,7 +23,8 @@ const Ingredient = sequelize.define('Ingredient', {
 })*/
 //associations
 
-Ingredient.belongsToMany(Recipes, { through: 'RecipeIngredient' });
-
+Ingredient.associate = () => {
+    Ingredient.belongsToMany(Recipes, { through: 'RecipeIngredient' });
+}
 
 export default Ingredient;
