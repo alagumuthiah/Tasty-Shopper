@@ -1,17 +1,15 @@
-import { TextField, Button, Typography, FormControl, FormLabel, Radio, RadioGroup, FormControlLabel } from "@mui/material";
+import { TextField, Button, Typography } from "@mui/material";
 import { Link } from 'react-router-dom';
 import React from 'react';
 
 function SignUpComponent() {
     const defaultValues = {
         username: "",
-        password: "",
-        confirmPassword: "",
+        firstname: "",
+        lastname: "",
         email: "",
-        gender: "",
-        dob: "",
-        phoneNumber: "",
-        summary: ""
+        password: "",
+        confirmPassword: ""
     }
 
     //how to use ButtonComponent - check
@@ -37,8 +35,9 @@ function SignUpComponent() {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div>
+        <form class="form-section" onSubmit={handleSubmit}>
+            <Typography>New User? Please Sign Up</Typography>
+            <div class="spaced-element">
                 <TextField
                     id="username"
                     type="text"
@@ -47,25 +46,25 @@ function SignUpComponent() {
                     label="Username"
                     onChange={handleChange} />
             </div>
-            <div>
+            <div class="spaced-element">
                 <TextField
-                    id="password"
-                    type="password"
-                    name="password"
-                    value={signUpData.password}
-                    label="Password"
+                    id="firstname"
+                    type="text"
+                    name="firstname"
+                    value={signUpData.firstname}
+                    label="First Name"
                     onChange={handleChange} />
             </div>
-            <div>
+            <div class="spaced-element">
                 <TextField
-                    id="confirmPassword"
-                    type="password"
-                    name="confirmPassword"
-                    value={signUpData.confirmPassword}
-                    label="Confirm Password"
+                    id="lastname"
+                    type="text"
+                    name="lastname"
+                    value={signUpData.lastname}
+                    label="Last Name"
                     onChange={handleChange} />
             </div>
-            <div>
+            <div class="spaced-element">
                 <TextField
                     id="email"
                     type="email"
@@ -74,44 +73,28 @@ function SignUpComponent() {
                     label="Email"
                     onChange={handleChange} />
             </div>
-            <div>
+            <div class="spaced-element">
                 <TextField
-                    id="summary"
-                    name="summary"
-                    type="text"
-                    value={signUpData.summary}
-                    multiline
-                    minRows={4}
-                    maxRows={8}
-                    onChange={handleChange}
-                />
+                    id="password"
+                    type="password"
+                    name="password"
+                    value={signUpData.password}
+                    label="Password"
+                    onChange={handleChange} />
+            </div>
+            <div class="spaced-element">
+                <TextField
+                    id="confirmPassword"
+                    type="password"
+                    name="confirmPassword"
+                    value={signUpData.confirmPassword}
+                    label="Confirm Password"
+                    onChange={handleChange} />
+            </div>
 
-            </div>
-            <div>
-                <FormLabel>Date of Birth</FormLabel>
-                <TextField
-                    id="dob"
-                    type="date"
-                    name="dob"
-                    value={signUpData.dob}
-                    onChange={handleChange}
-                />
-            </div>
-            <div>
-                <FormControl>
-                    <FormLabel>Gender</FormLabel>
-                    <RadioGroup name="gender" value={signUpData.gender} onChange={handleChange}>
-                        <FormControlLabel value="female" control={<Radio />} label="Female" />
-                        <FormControlLabel value="male"
-                            control={<Radio />} label="Male" />
-                        <FormControlLabel value="other"
-                            control={<Radio />} label="Other" />
-                    </RadioGroup>
-                </FormControl>
-            </div>
-            <div>
-                <Button variant="contained" type="submit">Sign Up</Button>
-                <Button variant="contained" onClick={handleReset}>Cancel</Button>
+            <div class="spaced-element">
+                <Button className="button-type" variant="contained" type="submit">Sign Up</Button>
+                <Button className="button-type" variant="contained" onClick={handleReset}>Cancel</Button>
             </div>
             <div>
                 <Typography>Login to your account<Link to="/login">Login</Link></Typography>
