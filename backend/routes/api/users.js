@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import jwt from 'jsonwebtoken';
 import { secretKey } from '../../secret';
 import authenticate from '../../auth';
+import { User } from '../../db/models';
 
 const userRoute = express.Router();
 
@@ -31,16 +32,27 @@ userRoute.post('/signup', function (req, res) {
     res.send("Sign in");
 })
 
-userRoute.post('/login', function (req, res) {
+userRoute.post('/login', async function (req, res) {
     const { username, password } = req.body;
     console.log(username, password);
-    const payload = { username };
-    const token = jwt.sign(payload, secretKey, {
-        expiresIn: '8h'
-    });
-    res.cookie('token', token, { httpOnly: true });
-    console.log(token);
-    res.send('log in');
+    const currUser = await User.findOne({ where: { username: username } });
+    console.log(currUser);
+    if (currUser == null) {
+        res.status(404);
+        res.send("User with the username doesn't exist");
+    } else if (currUser.password === password) {
+        const payload = { username };
+        const token = jwt.sign(payload, secretKey, {
+            expiresIn: '8h'
+        });
+        res.cookie('token', token, { httpOnly: true });
+        res.status(200);
+        res.send('Login successful');
+    } else {
+        res.status(401);
+        res.send('Invalid credentials');
+    }
+
 })
 
 userRoute.post('/logout', authenticate, function (req, res) {
