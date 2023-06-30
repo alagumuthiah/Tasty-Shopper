@@ -119,9 +119,9 @@ function FormComponent() {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className="form-section" onSubmit={handleSubmit}>
             <Typography>{location.state ? `Update Recipe` : `Create Recipe`}</Typography>
-            <div>
+            <div className="spaced-element">
                 <TextField
                     id="title"
                     name="title"
@@ -130,7 +130,7 @@ function FormComponent() {
                     label="Title"
                     value={recipeData.title} />
             </div>
-            <div>
+            <div className="spaced-element">
                 <TextField
                     id="servings"
                     name="servings"
@@ -139,7 +139,7 @@ function FormComponent() {
                     label="Servings"
                     value={recipeData.servings} />
             </div>
-            <div>
+            <div className="spaced-element">
                 <FormControl>
                     <Select
                         id="cuisine"
@@ -156,7 +156,7 @@ function FormComponent() {
                     </Select>
                 </FormControl>
             </div>
-            <div>
+            <div className="spaced-element">
                 <FormControl>
                     <FormLabel>Do you want to make it public?</FormLabel>
                     <RadioGroup name="isPublic" value={recipeData.isPublic} onChange={handleChange}>
@@ -166,7 +166,7 @@ function FormComponent() {
                     </RadioGroup>
                 </FormControl>
             </div>
-            <div>
+            <div className="spaced-element">
                 <FormLabel>Upload Image of your Recipe</FormLabel>
                 <TextField
                     id="image"
@@ -175,7 +175,7 @@ function FormComponent() {
                     onChange={handleChange}
                     value={recipeData.image} />
             </div>
-            <div>
+            <div className="spaced-element">
                 <FormLabel>Instructions</FormLabel>
                 {recipeData.instructions.map((instruction, index) => {
                     return (
@@ -196,7 +196,7 @@ function FormComponent() {
                 <Button name="instructions" variant="contained" onClick={handleAddWithIndex}>Add</Button>
 
             </div>
-            <div>
+            <div className="spaced-element">
                 <FormLabel>Ingredients</FormLabel>
                 {recipeData.ingredients.map((ingredient, index) => {
                     return (

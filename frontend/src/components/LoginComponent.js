@@ -3,6 +3,8 @@ import ButtonComponent from '../components/ButtonComponent';
 import { Link } from 'react-router-dom';
 import React from 'react';
 import axios from "axios";
+import { baseUrl } from "../shared/baseUrl";
+import { fetchUser } from "../shared/fetchData";
 
 function LoginComponent() {
 
@@ -12,36 +14,20 @@ function LoginComponent() {
     }
     const [formData, setFormData] = React.useState(defaultValues);
     const [isSubmitted, setIsSubmitted] = React.useState(false);
-    const [user, setUser] = React.useState(null);
+    const [user, setUser] = React.useState(null); //this user state is replicated in signup component, need to check if redux state can be used to maintain the values and share among components
 
     React.useEffect(() => {
         console.log('inside use Effect');
         if (isSubmitted) {
             console.log('Call login user');
 
-            const response = loginUser();
+            const response = fetchUser('/users/login', formData);
             console.log(response);
-            response.then((userData) => {
-                setUser(userData);
-            })
-
-        }
-        async function loginUser() {
-            try {
-                const response = await axios({
-                    method: 'post',
-                    url: 'http://localhost:3000/users/login',
-                    data: formData
-                });
-                setIsSubmitted(false);
-                setFormData(defaultValues);
-                return response.data;
-            }
-            catch (err) {
-                setIsSubmitted(false);
-                console.log(err);
-                alert(err.response.data);
-            }
+            response
+                .then((userData) => {
+                    setUser(userData);
+                })
+            setIsSubmitted(false);
         }
     }, [isSubmitted]);
 

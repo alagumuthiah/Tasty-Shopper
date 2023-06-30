@@ -1,7 +1,7 @@
 import RecipeCard from "./RecipeCard";
 import { Typography, TextField } from "@mui/material";
 import React from "react";
-import fetchRecipes from '../shared/fetchData';
+import { fetchRecipes } from '../shared/fetchData';
 
 //Is it possible to use the same MyRecipe component and render the Other recipes from external API?
 function RecipePage() {
