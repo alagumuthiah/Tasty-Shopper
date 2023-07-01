@@ -1,9 +1,13 @@
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from 'react-redux';
+import { login, logout } from '../store/session';
 
 function NavBar() {
-    const isAuthenticated = true;
 
+    const isAuthenticated = useSelector((state) => state.isLogged.value);
+    const dispatch = useDispatch();
+    console.log(isAuthenticated);
     return (
         <div className="nav--bar">
             <AppBar position="static" sx={{ bgcolor: "#5ab1bb" }}>
@@ -25,11 +29,13 @@ function NavBar() {
                             <Typography>Shopping List</Typography>
                         </Link>
                     </div>
-                    {isAuthenticated &&
+
+                    {isAuthenticated ?
+                        <Button size="medium" color="primary" variant="contained" onClick={() => dispatch(logout())} >Logout</Button>
+                        :
                         <Link to="/login">
-                            <Button size="medium" color="primary" variant="contained" >Login</Button>
-                        </Link>
-                    }
+                            <Button size="medium" color="primary" variant="contained" onClick={() => dispatch(login())}>Login</Button>
+                        </Link>}
                 </Toolbar>
             </AppBar>
         </div>
