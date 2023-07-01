@@ -2,8 +2,11 @@ import { TextField, Button, Typography } from "@mui/material";
 import { Link } from 'react-router-dom';
 import React from 'react';
 import { fetchUser } from "../shared/fetchData";
+import { useDispatch } from 'react-redux';
+import { login } from '../store/session';
 
 function SignUpComponent() {
+    const dispatch = useDispatch();
     const defaultValues = {
         username: "",
         firstName: "",
@@ -27,7 +30,13 @@ function SignUpComponent() {
             const response = fetchUser('/users/signup', signUpData);
             console.log(response); //error handling needs to be implemented
             response
-                .then((userData) => setUser(userData))
+                .then((userData) => {
+                    if (userData !== 'error') {
+                        setUser(userData);
+                        dispatch(login());
+                    }
+
+                })
             setIsSubmitted(false);
         }
     }, [isSubmitted]);
@@ -117,8 +126,6 @@ function SignUpComponent() {
             <div>
                 <Typography>Login to your account<Link to="/login">Login</Link></Typography>
             </div>
-            {user && (user.hasOwnProperty('username') ? user.username : user)}
-
         </form>
     )
 }

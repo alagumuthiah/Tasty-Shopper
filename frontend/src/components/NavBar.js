@@ -1,7 +1,7 @@
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux';
-import { login, logout } from '../store/session';
+import { logout } from '../store/session';
 
 function NavBar() {
 
@@ -34,7 +34,7 @@ function NavBar() {
                         <Button size="medium" color="primary" variant="contained" onClick={() => dispatch(logout())} >Logout</Button>
                         :
                         <Link to="/login">
-                            <Button size="medium" color="primary" variant="contained" onClick={() => dispatch(login())}>Login</Button>
+                            <Button size="medium" color="primary" variant="contained">Login</Button>
                         </Link>}
                 </Toolbar>
             </AppBar>

@@ -19,13 +19,15 @@ userRoute.use(bodyParser.json());
     4.If not create a new entry in the database for the user
     5.After creating an entry - create a JSON web token with expiration and set the JSON web token in the cookie
   */
+//Error handling to be implemented with proper error messages
 userRoute.post('/signup', async function (req, res) {
     const { username, firstName, lastName, email, password } = req.body;
     console.log(username, firstName, lastName, email, password);
     const currUser = await User.findOne({ where: { username: username } });
     if (currUser != null) {
         res.status(403);
-        res.send(`User with the username ${username} already exist`);
+        //res.send(`User with the username ${username} already exist`);
+        res.send("error");
     } else {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const newUser = await User.create({
@@ -45,6 +47,7 @@ userRoute.post('/signup', async function (req, res) {
 
 })
 
+//Error handling to be implemented with proper error messages
 userRoute.post('/login', async function (req, res) {
     const { username, password } = req.body;
     console.log(username, password);
@@ -52,7 +55,8 @@ userRoute.post('/login', async function (req, res) {
     console.log(currUser);
     if (currUser == null) {
         res.status(404);
-        res.send("User with the username doesn't exist");
+        //res.send("User with the username doesn't exist");
+        res.send("error");
     } else {
         const isMatch = await bcrypt.compare(password, currUser.password);
         console.log(isMatch);
@@ -66,13 +70,15 @@ userRoute.post('/login', async function (req, res) {
             res.send('Login successful');
         } else {
             res.status(401);
-            res.send('Invalid credentials');
+            //res.send('Invalid credentials');
+            res.send("error");
         }
     }
 
 
 })
 
+//Error handling to be implemented with proper error messages
 userRoute.post('/logout', authenticate, function (req, res) {
     res.clearCookie('token');
     res.send('logged out');

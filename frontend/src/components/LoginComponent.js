@@ -2,12 +2,12 @@ import { TextField, Typography } from "@mui/material";
 import ButtonComponent from '../components/ButtonComponent';
 import { Link } from 'react-router-dom';
 import React from 'react';
-import axios from "axios";
-import { baseUrl } from "../shared/baseUrl";
 import { fetchUser } from "../shared/fetchData";
+import { login } from '../store/session';
+import { useDispatch } from 'react-redux';
 
 function LoginComponent() {
-
+    const dispatch = useDispatch();
     const defaultValues = {
         username: "",
         password: ""
@@ -25,7 +25,13 @@ function LoginComponent() {
             console.log(response);
             response
                 .then((userData) => {
-                    setUser(userData);
+                    console.log(userData);
+                    if (userData !== "error") {
+                        setUser(userData);
+                        alert('Login successful');
+                        dispatch(login());
+                    }
+
                 })
             setIsSubmitted(false);
         }
@@ -78,7 +84,6 @@ function LoginComponent() {
             <div class="spaced-element">
                 <Typography>Don't have an account? <Link to="/signup">Sign Up</Link></Typography>
             </div>
-            <h1>{user}</h1>
         </form>
 
     )
