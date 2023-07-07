@@ -6,7 +6,7 @@ export default function RecipeCard(props) {
   const imgUrl = "https://source.unsplash.com/EzH46XCDQRY";
   return (
     <Link to={`/recipe/details`} state={{ selectedRecipe: props.recipe }} style={{ textDecoration: 'none' }}>
-      <Card sx={{ maxWidth: 300, maxHeight: 350 }}>
+      <Card className="card-class">
         <CardActionArea>
           <CardMedia sx={{ maxHeight: 150 }} component="img" image={imgUrl} alt={props.recipe.title} />
           <CardContent>

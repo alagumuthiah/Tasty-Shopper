@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Typography, TextField } from "@mui/material";
 import React from "react";
 //import fetchRecipes from '../shared/fetchData';
+import Button from "@mui/material/Button";
 import recipes from '../data/sampleRecipeData';
 
 function MyRecipes() {
@@ -23,7 +24,7 @@ function MyRecipes() {
             })
             setRecipeData(filterRecipe);
         } else {
-            setRecipeData(recipes)
+            setRecipeData([]);
         }
     }, [searchText])
 
@@ -39,11 +40,11 @@ function MyRecipes() {
 
     return (
         <div>
-            <div>
+            <div className="spaced-element">
                 <h1>Recipe Page</h1>
-                <Link to="/create/recipe">Create Recipe</Link>
+                <Button variant="contained"><Link className="link-style" to="/create/recipe">Create Recipe</Link></Button>
             </div>
-            <div>
+            <div className="spaced-element">
                 <Typography>Login to view custom recipes</Typography>
                 <div>
                     <TextField
@@ -55,7 +56,7 @@ function MyRecipes() {
                         value={searchText} />
                 </div>
             </div>
-            <div className="card--div">
+            <div className="card--div spaced-element">
                 {recipeCards}
             </div>
         </div>

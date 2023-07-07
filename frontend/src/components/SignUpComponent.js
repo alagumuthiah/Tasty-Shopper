@@ -1,21 +1,45 @@
-import { TextField, Button, Typography, FormControl, FormLabel, Radio, RadioGroup, FormControlLabel } from "@mui/material";
+import { TextField, Button, Typography } from "@mui/material";
 import { Link } from 'react-router-dom';
 import React from 'react';
+import { fetchUser } from "../shared/fetchData";
+import { useDispatch } from 'react-redux';
+import { login } from '../store/session';
 
 function SignUpComponent() {
+    const dispatch = useDispatch();
     const defaultValues = {
         username: "",
-        password: "",
-        confirmPassword: "",
+        firstName: "",
+        lastName: "",
         email: "",
-        gender: "",
-        dob: "",
-        phoneNumber: "",
-        summary: ""
+        password: "",
+        confirmPassword: ""
     }
 
     //how to use ButtonComponent - check
+    /* 1. Get the data from the fields in handleSubmit, use a submitted variable to denote that data is submitted
+    2. after submitting, useEffect has to be used as it in an external API call - check if username and password match => call the signup API with the data. Handle the response from signup API
+    */
     const [signUpData, setSignUpData] = React.useState(defaultValues);
+    const [isSubmitted, setIsSubmitted] = React.useState(false);
+    const [user, setUser] = React.useState(null);
+
+
+    React.useEffect(() => {
+        if (isSubmitted) {
+            const response = fetchUser('/users/signup', signUpData);
+            console.log(response); //error handling needs to be implemented
+            response
+                .then((userData) => {
+                    if (userData !== 'error') {
+                        setUser(userData);
+                        dispatch(login());
+                    }
+
+                })
+            setIsSubmitted(false);
+        }
+    }, [isSubmitted]);
 
     function handleChange(event) {
         setSignUpData((prevSignUpData) => ({
@@ -32,13 +56,15 @@ function SignUpComponent() {
     function handleSubmit(event) {
         event.preventDefault();
         console.log(signUpData);
-        handleReset();
+        setIsSubmitted(true);
+        //handleReset();
         alert(`Data submitted with the values ${signUpData.username}`);
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div>
+        <form className="form-section" onSubmit={handleSubmit}>
+            <Typography>New User? Please Sign Up</Typography>
+            <div className="spaced-element">
                 <TextField
                     id="username"
                     type="text"
@@ -47,25 +73,25 @@ function SignUpComponent() {
                     label="Username"
                     onChange={handleChange} />
             </div>
-            <div>
+            <div className="spaced-element">
                 <TextField
-                    id="password"
-                    type="password"
-                    name="password"
-                    value={signUpData.password}
-                    label="Password"
+                    id="firstName"
+                    type="text"
+                    name="firstName"
+                    value={signUpData.firstName}
+                    label="First Name"
                     onChange={handleChange} />
             </div>
-            <div>
+            <div className="spaced-element">
                 <TextField
-                    id="confirmPassword"
-                    type="password"
-                    name="confirmPassword"
-                    value={signUpData.confirmPassword}
-                    label="Confirm Password"
+                    id="lastName"
+                    type="text"
+                    name="lastName"
+                    value={signUpData.lastName}
+                    label="Last Name"
                     onChange={handleChange} />
             </div>
-            <div>
+            <div className="spaced-element">
                 <TextField
                     id="email"
                     type="email"
@@ -74,49 +100,32 @@ function SignUpComponent() {
                     label="Email"
                     onChange={handleChange} />
             </div>
-            <div>
+            <div className="spaced-element">
                 <TextField
-                    id="summary"
-                    name="summary"
-                    type="text"
-                    value={signUpData.summary}
-                    multiline
-                    minRows={4}
-                    maxRows={8}
-                    onChange={handleChange}
-                />
+                    id="password"
+                    type="password"
+                    name="password"
+                    value={signUpData.password}
+                    label="Password"
+                    onChange={handleChange} />
+            </div>
+            <div className="spaced-element">
+                <TextField
+                    id="confirmPassword"
+                    type="password"
+                    name="confirmPassword"
+                    value={signUpData.confirmPassword}
+                    label="Confirm Password"
+                    onChange={handleChange} />
+            </div>
 
-            </div>
-            <div>
-                <FormLabel>Date of Birth</FormLabel>
-                <TextField
-                    id="dob"
-                    type="date"
-                    name="dob"
-                    value={signUpData.dob}
-                    onChange={handleChange}
-                />
-            </div>
-            <div>
-                <FormControl>
-                    <FormLabel>Gender</FormLabel>
-                    <RadioGroup name="gender" value={signUpData.gender} onChange={handleChange}>
-                        <FormControlLabel value="female" control={<Radio />} label="Female" />
-                        <FormControlLabel value="male"
-                            control={<Radio />} label="Male" />
-                        <FormControlLabel value="other"
-                            control={<Radio />} label="Other" />
-                    </RadioGroup>
-                </FormControl>
-            </div>
-            <div>
-                <Button variant="contained" type="submit">Sign Up</Button>
-                <Button variant="contained" onClick={handleReset}>Cancel</Button>
+            <div className="spaced-element">
+                <Button className="button-type" variant="contained" type="submit">Sign Up</Button>
+                <Button className="button-type" variant="contained" onClick={handleReset}>Cancel</Button>
             </div>
             <div>
                 <Typography>Login to your account<Link to="/login">Login</Link></Typography>
             </div>
-
         </form>
     )
 }
