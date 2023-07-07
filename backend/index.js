@@ -14,3 +14,28 @@ app.use('/users', userRoute);
 
 
 app.listen(3000, () => { console.log('Server listening') });
+
+
+/*
+commands to create models
+npm install --save-dev sequelize-cli
+npx sequelize-cli init
+npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string
+
+npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,userName:string,email:string,hashedPassword:string;
+
+npx sequelize-cli model:generate --name Recipe --attributes title:string,cuisine:enum,servings:number,isPublic:boolean,instruction:array:string;
+
+npx sequelize-cli model:generate --name Ingredient --attributes name:string;
+
+npx sequelize-cli model:generate --name RecipeIngredient --attributes unit:enum,quantity:float;
+
+npx sequelize-cli db:migrate --name <migration file>
+npx sequelize-cli db:migrate:undo
+
+To seed / populate data in the database
+Generate the seed file:
+npx sequelize-cli seed:generate --name <file_name>
+Execute teh seed file
+npx sequelize-cli db:seed --seed 20230707022240-demo-users.js
+*/

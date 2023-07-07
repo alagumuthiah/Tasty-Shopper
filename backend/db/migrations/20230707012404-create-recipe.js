@@ -1,19 +1,28 @@
 'use strict';
+
+const { DataTypes } = require('sequelize');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('recipes', {
+    await queryInterface.createTable('Recipes', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      userId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: { model: 'Users' }
+      },
       title: {
         type: Sequelize.STRING
       },
       cuisine: {
-        type: Sequelize.STRING
+        type: Sequelize.ENUM,
+        values: ['Indian', 'Mexican', 'Thai', 'Italian', 'American', 'Korean', 'Vietnamese']
       },
       servings: {
         type: Sequelize.INTEGER
@@ -21,7 +30,7 @@ module.exports = {
       isPublic: {
         type: Sequelize.BOOLEAN
       },
-      instructions: {
+      instruction: {
         type: Sequelize.ARRAY(Sequelize.STRING)
       },
       createdAt: {
@@ -35,6 +44,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('recipes');
+    await queryInterface.dropTable('Recipes');
   }
 };

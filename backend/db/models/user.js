@@ -11,17 +11,30 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      User.hasMany(models.Recipe);
     }
   }
   User.init({
-    username: DataTypes.STRING,
-    firstname: DataTypes.STRING,
-    lastname: DataTypes.STRING,
-    email: DataTypes.STRING,
-    password: DataTypes.STRING
+    firstName: DataTypes.STRING,
+    lastName: DataTypes.STRING,
+    userName: {
+      type: DataTypes.STRING,
+      allowNull:false,
+      unique: true
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull:false,
+      unique: true
+    },
+    hashedPassword: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'User',
   });
   return User;
 };
+
+/*
+Include validations and constraints in the database tables
+*/

@@ -2,7 +2,7 @@
   "development": {
     "username": "postgres",
     "password": "alagu123",
-    "database": "recipe_app",
+    "database": "recipe_db",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
