@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import { User, Recipe } from '../../db/models';
+const { Op } = require("sequelize");
 const recipeRoute = express.Router();
 
 recipeRoute.use(bodyParser.json());
@@ -12,20 +13,52 @@ recipeRoute.route("/")
         next();
     })
 
-    .get((req, res, next) => {
-        res.statusCode = 200;
-        res.send('GET method');
+    //case insensitive query needs to be handled
+    .get(async (req, res, next) => {
+
+        console.log('GET request ID');
+        if (req.query.name !== undefined) {
+            let recipeName = req.query.name;
+            const recipeObj = await Recipe.findAll({
+                include: {
+                    model: User,
+                    attributes: ['firstName', 'lastName']
+                },
+                where: {
+                    title: {
+                        [Op.like]: `%${recipeName}%`
+                    },
+                },
+                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction']
+            });
+            if (recipeObj === null) {
+                console.log('Recipe not found');
+                res.status(404);
+                let errObj = { error: "Recipe with the given Recipe name doesn't exist" };
+                res.json(errObj);
+            } else {
+                console.log('Recipe found');
+                res.status(200);
+                console.log(recipeObj.dataValues);
+                res.json(recipeObj.dataValues);
+            }
+        } else {
+            console.log('Query Parameter not passed');
+            res.status(400);
+            let errObj = { error: "Bad request, query paramter not passed" };
+            res.json(errObj)
+        }
     })
 
     .post(async (req, res, next) => {
         res.statusCode = 200;
-        console.log(req.body);
+        /*console.log(req.body);
         const recipeDetail = req.body;
         const userDetail = await User.findOne({ userId: recipeDetail.userId });
         const recipe = await Recipe.create({ title: recipeDetail.title, cuisine: 'Indian', servings: 3, UserId: userDetail.id });
         console.log(recipe);
         //const userDetail = await User.findOne({ userId: recipeDetail.userId });
-        //recipe.addUser(userDetail);
+        //recipe.addUser(userDetail);*/
         res.send('POST API');
     })
 
@@ -35,9 +68,29 @@ recipeRoute.route("/:id")
         next();
     })
 
-    .get((req, res, next) => {
-        res.statusCode = 200;
-        res.send("GET :id method");
+    //query the recipe table and return the result along with the user details(firstname and lastname)
+    .get(async (req, res, next) => {
+        let recipeId = req.params.id;
+        console.log('GET request ID');
+        const recipeObj = await Recipe.findOne({
+            include: {
+                model: User,
+                attributes: ['firstName', 'lastName']
+            },
+            where: { id: recipeId },
+            attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction']
+        });
+        if (recipeObj === null) {
+            console.log('Recipe not found');
+            res.status(404);
+            let errObj = { error: "Recipe with the given Recipe Id doesn't exist" };
+            res.json(errObj);
+        } else {
+            console.log('Recipe found');
+            res.status(200);
+            console.log(recipeObj.dataValues);
+            res.json(recipeObj.dataValues);
+        }
     })
 
 export default recipeRoute

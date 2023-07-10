@@ -1,5 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import { Op } from 'sequelize';
+import { Ingredient } from '../../db/models';
 
 const ingredientRoute = express.Router();
 
@@ -12,9 +14,34 @@ ingredientRoute.route("/")
         next();
     })
 
-    .get((req, res, next) => {
+    .get(async (req, res, next) => {
+        console.log(req.query);
         res.statusCode = 200;
-        res.send('GET method');
+        if (req.query.name !== undefined) { // check if there are any better method for checking if query params is present or not.
+            console.log('Quey param passed');
+            let ingredientName = req.query.name;
+            const ingredientObj = await Ingredient.findOne({
+                where: {
+                    name: {
+                        [Op.iLike]: `%${ingredientName}%`
+                    }
+                },
+                attributes: ['id', 'name']
+            });
+            if (ingredientObj === null) {
+                res.status(404);
+                let errObj = { error: "Ingredient with the given Ingredient name doesn't exist" };
+                res.json(errObj);
+            } else {
+                console.log(ingredientObj);
+                res.json(ingredientObj);
+            }
+        } else {
+            console.log('Query Parameter not passed');
+            res.statusCode(400);
+            let errObj = { error: "Bad request, query paramter not passed" };
+            res.json(errObj)
+        }
     })
 
     .post((req, res, next) => {
@@ -22,10 +49,12 @@ ingredientRoute.route("/")
         console.log('hello from post');
         res.send('POST method');
     })
+
     .put((req, res, next) => {
         res.statusCode = 200;
         res.send('PUT method');
     })
+
     .delete((req, res, next) => {
         res.statusCode = 405;
         res.send('DELETE method not allowed');
@@ -37,10 +66,21 @@ ingredientRoute.route("/:id")
         next();
     })
 
-    .get((req, res, next) => {
-        res.statusCode = 200;
-        res.send('GET method');
+    .get(async (req, res, next) => {
+        let ingredientId = req.params.id;
+        console.log('GET request ID');
+        const ingredientObj = await Ingredient.findByPk(ingredientId);
+        if (ingredientObj === null) {
+            res.status(404);
+            let errObj = { error: "Ingredient with the given Ingredient Id doesn't exist" };
+            res.json(errObj);
+        } else {
+            res.status(200);
+            console.log(ingredientObj.dataValues);
+            res.json(ingredientObj.dataValues);
+        }
     })
+
     .post((req, res, next) => {
         res.statusCode = 405;
         res.send('POST method is not allowed with request params');
@@ -55,7 +95,6 @@ ingredientRoute.route("/:id")
         res.statusCode = 200;
         res.send('DELTE method');
     })
-
 
 
 

@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      User.hasMany(models.Recipe);
+      User.hasMany(models.Recipe, { foreignKey: 'userId' , targetKey:'id'});
     }
   }
   User.init({
@@ -19,12 +19,12 @@ module.exports = (sequelize, DataTypes) => {
     lastName: DataTypes.STRING,
     userName: {
       type: DataTypes.STRING,
-      allowNull:false,
+      allowNull: false,
       unique: true
     },
     email: {
       type: DataTypes.STRING,
-      allowNull:false,
+      allowNull: false,
       unique: true
     },
     hashedPassword: DataTypes.STRING

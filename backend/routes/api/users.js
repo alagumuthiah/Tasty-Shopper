@@ -4,13 +4,36 @@ import bodyParser from 'body-parser';
 import jwt from 'jsonwebtoken';
 import authenticate from '../../auth';
 import { User } from '../../db/models';
-import bcrypt, { hash } from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { secretKey, saltRounds } from '../../secret';
 
 const userRoute = express.Router();
 
 
 userRoute.use(bodyParser.json());
+
+//Given the userId - it returns the user details
+userRoute.get('/:id', async function (req, res) {
+    let userId = req.params.id;
+    console.log('GET request ID');
+    const userObj = await User.findOne({
+        where: { id: userId },
+        attributes: ['firstName', 'lastName', 'userName', 'email']
+    });
+    if (userObj === null) {
+        console.log('User not found');
+        res.status(404);
+        let errObj = { error: "User with the given User Id doesn't exist" };
+        res.json(errObj);
+    } else {
+        console.log('User found');
+        res.status(200);
+        console.log(userObj.dataValues);
+        console.log('after user');
+        res.json(userObj.dataValues);
+    }
+
+});
 
 //One way hash for storing the password
 /*1.We get the data from the req.body
@@ -20,6 +43,7 @@ userRoute.use(bodyParser.json());
     5.After creating an entry - create a JSON web token with expiration and set the JSON web token in the cookie
   */
 //Error handling to be implemented with proper error messages
+
 userRoute.post('/signup', async function (req, res) {
     const { username, firstName, lastName, email, password } = req.body;
     console.log(username, firstName, lastName, email, password);
@@ -45,7 +69,7 @@ userRoute.post('/signup', async function (req, res) {
         res.send(newUser);
     }
 
-})
+});
 
 //Error handling to be implemented with proper error messages
 userRoute.post('/login', async function (req, res) {
@@ -76,12 +100,12 @@ userRoute.post('/login', async function (req, res) {
     }
 
 
-})
+});
 
 //Error handling to be implemented with proper error messages
 userRoute.post('/logout', authenticate, function (req, res) {
     res.clearCookie('token');
     res.send('logged out');
-})
+});
 
 export default userRoute;
