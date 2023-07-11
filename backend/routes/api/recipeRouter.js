@@ -13,24 +13,32 @@ recipeRoute.route("/")
         next();
     })
 
-    //case insensitive query needs to be handled
+    //include pagination for search (limit and offset) - external API also has offset parameter
+    /* Pass the page number as a query parameter ?page=1 = > this will return the first limit number of rows as result
+       External API also has offset as optional parameter
+       Op.iLike]: `%${recipeName}%`
+    */
     .get(async (req, res, next) => {
-
-        console.log('GET request ID');
+        console.log(req.query);
         if (req.query.name !== undefined) {
             let recipeName = req.query.name;
+            let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
+            let limit = 5;
             const recipeObj = await Recipe.findAll({
+                limit: limit,
+                offset: (pageNumber - 1) * limit,
                 include: {
                     model: User,
                     attributes: ['firstName', 'lastName']
                 },
                 where: {
                     title: {
-                        [Op.like]: `%${recipeName}%`
-                    },
+                        [Op.iLike]: `%${recipeName}%`
+                    }
                 },
                 attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction']
             });
+
             if (recipeObj === null) {
                 console.log('Recipe not found');
                 res.status(404);
@@ -39,8 +47,10 @@ recipeRoute.route("/")
             } else {
                 console.log('Recipe found');
                 res.status(200);
-                console.log(recipeObj.dataValues);
-                res.json(recipeObj.dataValues);
+                const recipeData = recipeObj.map((recipe) => {
+                    return (recipe.dataValues)
+                })
+                res.json(recipeData);
             }
         } else {
             console.log('Query Parameter not passed');
