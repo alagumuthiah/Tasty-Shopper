@@ -18,7 +18,6 @@ ingredientRoute.route("/")
         console.log(req.query);
         res.statusCode = 200;
         if (req.query.name !== undefined) { // check if there are any better method for checking if query params is present or not.
-            console.log('Quey param passed');
             let ingredientName = req.query.name;
             const ingredientObj = await Ingredient.findOne({
                 where: {
@@ -33,11 +32,10 @@ ingredientRoute.route("/")
                 let errObj = { error: "Ingredient with the given Ingredient name doesn't exist" };
                 res.json(errObj);
             } else {
-                console.log(ingredientObj);
+                res.status(200);
                 res.json(ingredientObj);
             }
         } else {
-            console.log('Query Parameter not passed');
             res.statusCode(400);
             let errObj = { error: "Bad request, query paramter not passed" };
             res.json(errObj)
@@ -46,7 +44,6 @@ ingredientRoute.route("/")
 
     .post((req, res, next) => {
         res.statusCode = 201; // new resource created
-        console.log('hello from post');
         res.send('POST method');
     })
 
@@ -69,16 +66,23 @@ ingredientRoute.route("/:id")
     .get(async (req, res, next) => {
         let ingredientId = req.params.id;
         console.log('GET request ID');
-        const ingredientObj = await Ingredient.findByPk(ingredientId);
-        if (ingredientObj === null) {
-            res.status(404);
-            let errObj = { error: "Ingredient with the given Ingredient Id doesn't exist" };
-            res.json(errObj);
-        } else {
-            res.status(200);
-            console.log(ingredientObj.dataValues);
-            res.json(ingredientObj.dataValues);
+        try {
+            const ingredientObj = await Ingredient.findByPk(ingredientId);
+            if (ingredientObj === null) {
+                res.status(404);
+                let errObj = { error: "Ingredient with the given Ingredient Id doesn't exist" };
+                res.json(errObj);
+            } else {
+                res.status(200);
+                res.json(ingredientObj.dataValues);
+            }
         }
+        catch (error) {
+            res.status(500);
+            let errObj = { error: `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
+
     })
 
     .post((req, res, next) => {

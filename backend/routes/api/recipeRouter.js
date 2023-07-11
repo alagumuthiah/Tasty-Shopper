@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { User, Recipe } from '../../db/models';
+import { User, Recipe, Ingredient, RecipeIngredient } from '../../db/models';
 const { Op } = require("sequelize");
 const recipeRoute = express.Router();
 
@@ -24,36 +24,47 @@ recipeRoute.route("/")
             let recipeName = req.query.name;
             let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
             let limit = 5;
-            const recipeObj = await Recipe.findAll({
-                limit: limit,
-                offset: (pageNumber - 1) * limit,
-                include: {
-                    model: User,
-                    attributes: ['firstName', 'lastName']
-                },
-                where: {
-                    title: {
-                        [Op.iLike]: `%${recipeName}%`
-                    }
-                },
-                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction']
-            });
-
-            if (recipeObj === null) {
-                console.log('Recipe not found');
-                res.status(404);
-                let errObj = { error: "Recipe with the given Recipe name doesn't exist" };
-                res.json(errObj);
-            } else {
-                console.log('Recipe found');
-                res.status(200);
-                const recipeData = recipeObj.map((recipe) => {
-                    return (recipe.dataValues)
-                })
-                res.json(recipeData);
+            try {
+                const recipeObj = await Recipe.findAll({
+                    limit: limit,
+                    offset: (pageNumber - 1) * limit,
+                    include: [
+                        {
+                            model: User,
+                            attributes: ['firstName', 'lastName', 'userName']
+                        },
+                        {
+                            model: Ingredient,
+                            attributes: ['name'],
+                            through: { attributes: ['unit', 'quantity'] }
+                        },
+                    ],
+                    where: {
+                        title: {
+                            [Op.iLike]: `%${recipeName}%`
+                        }
+                    },
+                    attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction']
+                });
+                if (recipeObj.length === 0) {
+                    res.status(404);
+                    let errObj = { error: "Recipe with the given Recipe name doesn't exist" };
+                    res.json(errObj);
+                } else {
+                    res.status(200);
+                    const recipeData = recipeObj.map((recipe) => {
+                        return (recipe.dataValues)
+                    })
+                    res.json(recipeData);
+                }
             }
+            catch (error) {
+                res.status(500);
+                let errObj = { error: `Internal Server Error ${error}` }
+                res.json(errObj);
+            }
+
         } else {
-            console.log('Query Parameter not passed');
             res.status(400);
             let errObj = { error: "Bad request, query paramter not passed" };
             res.json(errObj)
@@ -82,25 +93,42 @@ recipeRoute.route("/:id")
     .get(async (req, res, next) => {
         let recipeId = req.params.id;
         console.log('GET request ID');
-        const recipeObj = await Recipe.findOne({
-            include: {
-                model: User,
-                attributes: ['firstName', 'lastName']
-            },
-            where: { id: recipeId },
-            attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction']
-        });
-        if (recipeObj === null) {
-            console.log('Recipe not found');
-            res.status(404);
-            let errObj = { error: "Recipe with the given Recipe Id doesn't exist" };
-            res.json(errObj);
-        } else {
-            console.log('Recipe found');
-            res.status(200);
-            console.log(recipeObj.dataValues);
-            res.json(recipeObj.dataValues);
+        try {
+            const recipeObj = await Recipe.findOne({
+                include: {
+                    model: User,
+                    attributes: ['firstName', 'lastName', 'userName']
+                },
+                include: [
+                    {
+                        model: User,
+                        attributes: ['firstName', 'lastName']
+                    },
+                    {
+                        model: Ingredient,
+                        attributes: ['name'],
+                        through: { attributes: ['unit', 'quantity'] }
+                    }
+                ],
+                where: { id: recipeId },
+                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction']
+            });
+            if (recipeObj === null) {
+                res.status(404);
+                let errObj = { error: "Recipe with the given Recipe Id doesn't exist" };
+                res.json(errObj);
+            } else {
+                res.status(200);
+                res.json(recipeObj.dataValues);
+            }
         }
+        catch (error) {
+            res.status(500);
+            let errObj = { error: `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
+
+
     })
 
 export default recipeRoute
