@@ -1,10 +1,7 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import { User, Recipe, Ingredient, RecipeIngredient } from '../../db/models';
 const { Op } = require("sequelize");
 const recipeRoute = express.Router();
-
-recipeRoute.use(bodyParser.json());
 
 recipeRoute.route("/")
     .all((req, res, next) => {
@@ -16,7 +13,7 @@ recipeRoute.route("/")
     //include pagination for search (limit and offset) - external API also has offset parameter
     /* Pass the page number as a query parameter ?page=1 = > this will return the first limit number of rows as result
        External API also has offset as optional parameter
-       Op.iLike]: `%${recipeName}%`
+    include validations for query parameters
     */
     .get(async (req, res, next) => {
         console.log(req.query);
@@ -47,11 +44,11 @@ recipeRoute.route("/")
                     attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction']
                 });
                 if (recipeObj.length === 0) {
-                    res.status(404);
+                    res.statusCode = 404;
                     let errObj = { error: "Recipe with the given Recipe name doesn't exist" };
                     res.json(errObj);
                 } else {
-                    res.status(200);
+                    res.statusCode = 200;
                     const recipeData = recipeObj.map((recipe) => {
                         return (recipe.dataValues)
                     })
@@ -59,13 +56,13 @@ recipeRoute.route("/")
                 }
             }
             catch (error) {
-                res.status(500);
+                res.statusCode = 500;
                 let errObj = { error: `Internal Server Error ${error}` }
                 res.json(errObj);
             }
 
         } else {
-            res.status(400);
+            res.statusCode = 400;
             let errObj = { error: "Bad request, query paramter not passed" };
             res.json(errObj)
         }
@@ -114,16 +111,16 @@ recipeRoute.route("/:id")
                 attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction']
             });
             if (recipeObj === null) {
-                res.status(404);
+                res.statusCode = 404;
                 let errObj = { error: "Recipe with the given Recipe Id doesn't exist" };
                 res.json(errObj);
             } else {
-                res.status(200);
+                res.statusCode = 200;
                 res.json(recipeObj.dataValues);
             }
         }
         catch (error) {
-            res.status(500);
+            res.statusCode = 500;
             let errObj = { error: `Internal Server Error ${error}` }
             res.json(errObj);
         }

@@ -4,14 +4,27 @@ import recipeRoute from './routes/api/recipeRouter';
 import userRoute from './routes/api/users';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import bodyParser from 'body-parser';
+import { ValidationError } from 'express-json-validator-middleware';
 
 const app = express();
 app.use(cookieParser());
 app.use(cors());
+app.use(bodyParser.json());
 app.use('/recipes', recipeRoute);
 app.use('/ingredients', ingredientRoute);
 app.use('/users', userRoute);
 
+app.use((error, req, res, next) => {
+    console.log('inside validation error');
+    console.log(typeof error);
+    if (error instanceof ValidationError) {
+        res.status(400);
+        res.send(error.validationErrors);
+    } else {
+        console.log('Else');
+    }
+})
 
 app.listen(3000, () => { console.log('Server listening') });
 

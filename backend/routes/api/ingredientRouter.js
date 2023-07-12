@@ -1,11 +1,22 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import { Op } from 'sequelize';
 import { Ingredient } from '../../db/models';
-
+import { Validator } from 'express-json-validator-middleware';
 const ingredientRoute = express.Router();
 
-ingredientRoute.use(bodyParser.json());
+const { validate } = new Validator();
+
+const ingredientSchema = {
+    type: 'object',
+    required: ['name'],
+    properties: {
+        name: {
+            type: 'string',
+            minLength: 1
+        },
+    },
+};
+
 
 ingredientRoute.route("/")
 
@@ -16,8 +27,7 @@ ingredientRoute.route("/")
 
     .get(async (req, res, next) => {
         console.log(req.query);
-        res.statusCode = 200;
-        if (req.query.name !== undefined) { // check if there are any better method for checking if query params is present or not.
+        if (req.query.name !== undefined) { // to implemet query params validation schema
             let ingredientName = req.query.name;
             const ingredientObj = await Ingredient.findOne({
                 where: {
@@ -28,26 +38,39 @@ ingredientRoute.route("/")
                 attributes: ['id', 'name']
             });
             if (ingredientObj === null) {
-                res.status(404);
+                res.statusCode = 404;
                 let errObj = { error: "Ingredient with the given Ingredient name doesn't exist" };
                 res.json(errObj);
             } else {
-                res.status(200);
+                res.statusCode = 200;
                 res.json(ingredientObj);
             }
         } else {
-            res.statusCode(400);
+            res.statusCode = 400;
             let errObj = { error: "Bad request, query paramter not passed" };
             res.json(errObj)
         }
     })
 
-    .post((req, res, next) => {
-        res.statusCode = 201; // new resource created
-        res.send('POST method');
+    /*
+    To be included Error: unique constraint error, Resource already exist error
+    */
+    .post(validate({ body: ingredientSchema }), async (req, res, next) => {
+
+        try {
+            const ingredientObj = await Ingredient.create(req.body);
+            res.statusCode = 201;
+            res.json(ingredientObj.dataValues);
+        }
+        catch (error) {
+            console.log(error);
+            res.statusCode = 500;
+            let errObj = { error: `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
     })
 
-    .put((req, res, next) => {
+    .put(async (req, res, next) => {
         res.statusCode = 200;
         res.send('PUT method');
     })
@@ -67,18 +90,18 @@ ingredientRoute.route("/:id")
         let ingredientId = req.params.id;
         console.log('GET request ID');
         try {
-            const ingredientObj = await Ingredient.findByPk(ingredientId);
+            const ingredientObj = await Ingredient.findByPk(ingredientId); // check how to exlude created and updated attributes when returning the result
             if (ingredientObj === null) {
-                res.status(404);
+                res.statusCode = 404;
                 let errObj = { error: "Ingredient with the given Ingredient Id doesn't exist" };
                 res.json(errObj);
             } else {
-                res.status(200);
+                res.statusCode = 200;
                 res.json(ingredientObj.dataValues);
             }
         }
         catch (error) {
-            res.status(500);
+            res.statusCode = 500;
             let errObj = { error: `Internal Server Error ${error}` }
             res.json(errObj);
         }
@@ -90,13 +113,26 @@ ingredientRoute.route("/:id")
         res.send('POST method is not allowed with request params');
     })
 
-    .put((req, res, next) => {
-        res.statusCode = 200;
-        res.send('PUT method');
+    .put(validate({ body: ingredientSchema }), async (req, res, next) => {
+        try {
+            await Ingredient.update(req.body, {
+                where: {
+                    id: req.params.id
+                }
+            });
+            res.statusCode = 204;
+            res.json();
+        }
+        catch (error) {
+            console.log(error);
+            res.statusCode = 500;
+            let errObj = { error: `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
     })
 
     .delete((req, res, next) => {
-        res.statusCode = 200;
+        res.statusCodeCode = 200;
         res.send('DELTE method');
     })
 
