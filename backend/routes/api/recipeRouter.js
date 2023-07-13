@@ -1,7 +1,70 @@
 import express from 'express';
 import { User, Recipe, Ingredient, RecipeIngredient } from '../../db/models';
-const { Op } = require("sequelize");
+import { Validator } from 'express-json-validator-middleware';
+import db from '../../db/models/index';
+const { sequelize } = require("sequelize");
 const recipeRoute = express.Router();
+
+const { validate } = new Validator();
+
+/*
+ {
+    "title":"Paruppu Payasam",
+    "cuisine":"Indian",
+    "servings":4,
+    "isPublic":true,
+    "userId": 2,
+    "instructions":["Boil the mong dal","Make the jaggery syrup add coconut milk","Add the cooked dal", "Season it with nuts"]
+ }
+*/
+const recipeSchema = {
+    type: 'object',
+    required: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'userId', 'ingredients'],
+    properties: {
+        title: {
+            type: 'string',
+            minLength: 2
+        },
+        cuisine: {
+            type: 'string',
+            enum: ['Indian', 'Mexican', 'Thai', 'Italian', 'American', 'Korean', 'Vietnamese']
+        },
+        servings: {
+            type: 'number',
+        },
+        isPublic: {
+            type: 'boolean'
+        },
+        instruction: {
+            type: 'array',
+        },
+        userId: {
+            type: 'number',
+        },
+        ingredients: {
+            type: 'array',
+            minItems: 1,
+            items: {
+                type: "object",
+                required: ['name', 'quantity', 'unit'],
+                properties: {
+                    name: {
+                        type: 'string',
+                        minLength: 1
+                    },
+                    quantity: {
+                        type: 'number',
+                    },
+                    unit: {
+                        type: 'string',
+                        enum: ['cup', 'teaspoon', 'tablespoon', 'ml', 'liters', 'grams', 'kilograms', 'oz', 'number']
+                    }
+                }
+            }
+
+        }
+    }
+};
 
 recipeRoute.route("/")
     .all((req, res, next) => {
@@ -67,9 +130,65 @@ recipeRoute.route("/")
             res.json(errObj)
         }
     })
+    //, { transaction: createRecipeTransaction }
+    .post(validate({ body: recipeSchema }), async (req, res, next) => {
+        //console.log(req.body);
+        const createRecipeTransaction = await db.sequelize.transaction();
+        const createRecipeIngredientTrans = await db.sequelize.transaction();
+        try {
+            const recipeRequest = { ...req.body };
+            const result = await db.sequelize.transaction(async (t) => {
+                const recipeDetails = await Recipe.create({
+                    title: recipeRequest.title,
+                    cuisine: recipeRequest.cuisine,
+                    servings: recipeRequest.servings,
+                    isPublic: recipeRequest.isPublic,
+                    instruction: recipeRequest.instruction,
+                    userId: recipeRequest.userId
+                });
 
-    .post(async (req, res, next) => {
-        res.statusCode = 200;
+                const recipeId = recipeDetails.id; // id of the recipe created
+                console.log('Recipe id', recipeId)
+                const ingredientList = recipeRequest.ingredients;
+
+                ingredientList.map(async (ingredient) => { //need to check if ingredient has to be part of the transaction
+                    console.log(ingredient);
+                    const [ingredientDetail, created] = await Ingredient.findOrCreate({
+                        where: { name: ingredient.name }
+                    });
+                    console.log(ingredient);
+                    const recipeIngredientDetail = await RecipeIngredient.create({
+                        IngredientId: ingredientDetail.id,
+                        RecipeId: recipeId,
+                        quantity: ingredient.quantity,
+                        unit: ingredient.unit
+                    });
+
+                    console.log(recipeIngredientDetail.dataValues);
+
+                    console.log(created);
+                    console.log(ingredientDetail);
+                    const ingredientId = ingredientDetail.dataValues.id;
+                    console.log(ingredientId, recipeId, ingredient.quantity, ingredient.unit);
+
+
+                })
+                throw new Error('User created Error');
+                res.statusCode = 200;
+                res.json(recipeDetails);
+            })
+
+
+
+        }
+        catch (error) {
+            res.statusCode = 500;
+            let errObj = { error: `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
+
+
+
         /*console.log(req.body);
         const recipeDetail = req.body;
         const userDetail = await User.findOne({ userId: recipeDetail.userId });
@@ -77,7 +196,6 @@ recipeRoute.route("/")
         console.log(recipe);
         //const userDetail = await User.findOne({ userId: recipeDetail.userId });
         //recipe.addUser(userDetail);*/
-        res.send('POST API');
     })
 
 recipeRoute.route("/:id")
