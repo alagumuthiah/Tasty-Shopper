@@ -7,16 +7,6 @@ const recipeRoute = express.Router();
 
 const { validate } = new Validator();
 
-/*
- {
-    "title":"Paruppu Payasam",
-    "cuisine":"Indian",
-    "servings":4,
-    "isPublic":true,
-    "userId": 2,
-    "instructions":["Boil the mong dal","Make the jaggery syrup add coconut milk","Add the cooked dal", "Season it with nuts"]
- }
-*/
 const recipeSchema = {
     type: 'object',
     required: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'userId', 'ingredients'],
@@ -130,72 +120,63 @@ recipeRoute.route("/")
             res.json(errObj)
         }
     })
-    //, { transaction: createRecipeTransaction }
+
+    //when one of the query doesn't work, that condition needs to be handled
     .post(validate({ body: recipeSchema }), async (req, res, next) => {
-        //console.log(req.body);
-        const createRecipeTransaction = await db.sequelize.transaction();
-        const createRecipeIngredientTrans = await db.sequelize.transaction();
+
+        const createRecipeIngredientTransaction = await db.sequelize.transaction();
+        const createRecipeIngredientModelTrans = await db.sequelize.transaction();
         try {
             const recipeRequest = { ...req.body };
-            const result = await db.sequelize.transaction(async (t) => {
-                const recipeDetails = await Recipe.create({
-                    title: recipeRequest.title,
-                    cuisine: recipeRequest.cuisine,
-                    servings: recipeRequest.servings,
-                    isPublic: recipeRequest.isPublic,
-                    instruction: recipeRequest.instruction,
-                    userId: recipeRequest.userId
+
+            var recipeDetails = await Recipe.create({
+                title: recipeRequest.title,
+                cuisine: recipeRequest.cuisine,
+                servings: recipeRequest.servings,
+                isPublic: recipeRequest.isPublic,
+                instruction: recipeRequest.instruction,
+                userId: recipeRequest.userId
+            }, { transaction: createRecipeIngredientTransaction });
+            var recipeId = recipeDetails.id; // id of the recipe created
+            const ingredientList = recipeRequest.ingredients;
+            console.log(ingredientList);
+            var ingredients = await Promise.all(ingredientList.map(async (ingredient) => { //need to check if ingredient has to be part of the transaction
+                let [ingredientDetail, created] = await Ingredient.findOrCreate({
+                    where: { name: ingredient.name },
+                    transaction: createRecipeIngredientTransaction
                 });
-
-                const recipeId = recipeDetails.id; // id of the recipe created
-                console.log('Recipe id', recipeId)
-                const ingredientList = recipeRequest.ingredients;
-
-                ingredientList.map(async (ingredient) => { //need to check if ingredient has to be part of the transaction
-                    console.log(ingredient);
-                    const [ingredientDetail, created] = await Ingredient.findOrCreate({
-                        where: { name: ingredient.name }
-                    });
-                    console.log(ingredient);
-                    const recipeIngredientDetail = await RecipeIngredient.create({
-                        IngredientId: ingredientDetail.id,
-                        RecipeId: recipeId,
-                        quantity: ingredient.quantity,
-                        unit: ingredient.unit
-                    });
-
-                    console.log(recipeIngredientDetail.dataValues);
-
-                    console.log(created);
-                    console.log(ingredientDetail);
-                    const ingredientId = ingredientDetail.dataValues.id;
-                    console.log(ingredientId, recipeId, ingredient.quantity, ingredient.unit);
-
-
-                })
-                throw new Error('User created Error');
-                res.statusCode = 200;
-                res.json(recipeDetails);
-            })
-
-
-
+                return { id: ingredientDetail.id, quantity: ingredient.quantity, unit: ingredient.unit };
+            }));
+            await createRecipeIngredientTransaction.commit();
         }
         catch (error) {
+            await createRecipeIngredientTransaction.rollback();
             res.statusCode = 500;
             let errObj = { error: `Internal Server Error ${error}` }
             res.json(errObj);
         }
 
+        try {
+            await Promise.all(ingredients.map(async (ingredient) => {
+                const recipeIngredientDetail = await RecipeIngredient.create({
+                    IngredientId: ingredient.id,
+                    RecipeId: recipeId,
+                    quantity: ingredient.quantity,
+                    unit: ingredient.unit
+                }, { transaction: createRecipeIngredientModelTrans });
+            }));
+            await createRecipeIngredientModelTrans.commit();
+            res.statusCode = 201;
+            res.json(recipeDetails);
+        }
 
-
-        /*console.log(req.body);
-        const recipeDetail = req.body;
-        const userDetail = await User.findOne({ userId: recipeDetail.userId });
-        const recipe = await Recipe.create({ title: recipeDetail.title, cuisine: 'Indian', servings: 3, UserId: userDetail.id });
-        console.log(recipe);
-        //const userDetail = await User.findOne({ userId: recipeDetail.userId });
-        //recipe.addUser(userDetail);*/
+        catch (error) {
+            console.log(error, 'Error')
+            await createRecipeIngredientModelTrans.rollback();
+            res.statusCode = 500;
+            let errObj = { error: `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
     })
 
 recipeRoute.route("/:id")
