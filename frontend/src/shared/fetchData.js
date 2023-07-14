@@ -15,12 +15,15 @@ export async function fetchRecipes(url, searchText) {
 }
 
 export async function fetchUser(uri, payload) {
+    console.log('Payload', payload);
     try {
         const response = await axios({
             method: 'post',
             url: `${baseUrl}${uri}`,
             data: payload
         })
+        console.log(response);
+
         return response.data;
     }
     catch (err) {

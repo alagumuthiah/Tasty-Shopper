@@ -8,7 +8,7 @@ import { login } from '../store/session';
 function SignUpComponent() {
     const dispatch = useDispatch();
     const defaultValues = {
-        username: "",
+        userName: "",
         firstName: "",
         lastName: "",
         email: "",
@@ -18,12 +18,10 @@ function SignUpComponent() {
 
     //how to use ButtonComponent - check
     /* 1. Get the data from the fields in handleSubmit, use a submitted variable to denote that data is submitted
-    2. after submitting, useEffect has to be used as it in an external API call - check if username and password match => call the signup API with the data. Handle the response from signup API
+    2. after submitting, useEffect has to be used as it in an external API call - check if userName and password match => call the signup API with the data. Handle the response from signup API
     */
     const [signUpData, setSignUpData] = React.useState(defaultValues);
     const [isSubmitted, setIsSubmitted] = React.useState(false);
-    const [user, setUser] = React.useState(null);
-
 
     React.useEffect(() => {
         if (isSubmitted) {
@@ -32,10 +30,12 @@ function SignUpComponent() {
             response
                 .then((userData) => {
                     if (userData !== 'error') {
-                        setUser(userData);
-                        dispatch(login());
+                        dispatch(login(userData));
                     }
 
+                })
+                .catch((error) => {
+                    console.log('Erro');
                 })
             setIsSubmitted(false);
         }
@@ -57,8 +57,7 @@ function SignUpComponent() {
         event.preventDefault();
         console.log(signUpData);
         setIsSubmitted(true);
-        //handleReset();
-        alert(`Data submitted with the values ${signUpData.username}`);
+        alert(`Data submitted with the values ${signUpData.userName}`);
     }
 
     return (
@@ -66,11 +65,11 @@ function SignUpComponent() {
             <Typography>New User? Please Sign Up</Typography>
             <div className="spaced-element">
                 <TextField
-                    id="username"
+                    id="userName"
                     type="text"
-                    name="username"
-                    value={signUpData.username}
-                    label="Username"
+                    name="userName"
+                    value={signUpData.userName}
+                    label="userName"
                     onChange={handleChange} />
             </div>
             <div className="spaced-element">

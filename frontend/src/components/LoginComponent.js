@@ -9,15 +9,13 @@ import { useDispatch } from 'react-redux';
 function LoginComponent() {
     const dispatch = useDispatch();
     const defaultValues = {
-        username: "",
+        userName: "",
         password: ""
     }
     const [formData, setFormData] = React.useState(defaultValues);
     const [isSubmitted, setIsSubmitted] = React.useState(false);
-    const [user, setUser] = React.useState(null); //this user state is replicated in signup component, need to check if redux state can be used to maintain the values and share among components
 
     React.useEffect(() => {
-        console.log('inside use Effect');
         if (isSubmitted) {
             console.log('Call login user');
 
@@ -27,11 +25,15 @@ function LoginComponent() {
                 .then((userData) => {
                     console.log(userData);
                     if (userData !== "error") {
-                        setUser(userData);
+                        console.log(userData);
                         alert('Login successful');
-                        dispatch(login());
+                        dispatch(login(userData));
                     }
 
+                })
+                .catch((error) => {
+                    alert('Error');
+                    console.log('Error', error);
                 })
             setIsSubmitted(false);
         }
@@ -48,11 +50,8 @@ function LoginComponent() {
     function handleSubmit(event) {
         console.log(event);
         event.preventDefault();
-        //alert(`Username:${formData.username} Password:${formData.password}`);
-        console.log(formData.username, formData.password);
+        console.log(formData.userName, formData.password);
         setIsSubmitted(true);
-        //setFormData(defaultValues);
-        //setIsSubmitted(false);
     }
 
 
@@ -62,12 +61,12 @@ function LoginComponent() {
             <Typography>Login to view custom recipes</Typography>
             <div class="spaced-element">
                 <TextField
-                    id="username"
-                    name="username"
+                    id="userName"
+                    name="userName"
                     type="text"
                     onChange={handleChange}
-                    label="Username"
-                    value={formData.username} />
+                    label="userName"
+                    value={formData.userName} />
             </div>
             <div class="spaced-element">
                 <TextField

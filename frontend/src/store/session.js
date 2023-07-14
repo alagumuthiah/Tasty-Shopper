@@ -1,16 +1,28 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const initialState = {
+    value: false,
+    userName: '',
+    firstName: '',
+    lastName: ''
+}
 export const sessionSlice = createSlice({
     name: 'isLogged',
-    initialState: {
-        value: false,
-    },
+    initialState: initialState,
     reducers: {
-        login: (state) => {
+        login: (state, action) => {
+            console.log(action.payload);
             state.value = true
+            state.userName = action.payload.userName;
+            state.firstName = action.payload.firstName;
+            state.lastName = action.payload.lastName;
+            console.log(action.payload.firstName);
         },
         logout: (state) => {
-            state.value = false
+            state.value = false;
+            state.firstName = '';
+            state.lastName = '';
+            state.userName = '';
         }
     }
 })

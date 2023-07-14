@@ -45,27 +45,28 @@ userRoute.get('/:id', async function (req, res) {
 //Error handling to be implemented with proper error messages
 
 userRoute.post('/signup', async function (req, res) {
-    const { username, firstName, lastName, email, password } = req.body;
-    console.log(username, firstName, lastName, email, password);
-    const currUser = await User.findOne({ where: { username: username } });
-    if (currUser != null) {
-        res.status(403);
+    const { userName, firstName, lastName, email, password } = req.body;
+    console.log(userName, firstName, lastName, email, password);
+    const currUser = await User.findOne({ where: { userName: userName }, attributes: ['userName', 'firstName', 'lastName', 'hashedPassword'] });
+    if (currUser !== null) {
+        res.statusCode = 403;
         //res.send(`User with the username ${username} already exist`);
         res.send("error");
     } else {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const newUser = await User.create({
-            username: username,
-            firstname: firstName,
-            lastname: lastName,
+            userName: userName,
+            firstName: firstName,
+            lastName: lastName,
             email: email,
-            password: hashedPassword
+            hashedPassword: hashedPassword
         });
-        const payload = { username }; //claims to be used to create a JSON token
+        const payload = { userName }; //claims to be used to create a JSON token
         const token = jwt.sign(payload, secretKey, {
             expiresIn: '8h'
         });
         res.cookie('token', token);
+        res.statusCode = 200;
         res.send(newUser);
     }
 
@@ -73,27 +74,29 @@ userRoute.post('/signup', async function (req, res) {
 
 //Error handling to be implemented with proper error messages
 userRoute.post('/login', async function (req, res) {
-    const { username, password } = req.body;
-    console.log(username, password);
-    const currUser = await User.findOne({ where: { username: username } });
+    const { userName, password } = req.body;
+    console.log(userName, password);
+    const currUser = await User.findOne({
+        where: { userName: userName },
+        attributes: ['userName', 'firstName', 'lastName', 'hashedPassword']
+    });
     console.log(currUser);
-    if (currUser == null) {
-        res.status(404);
+    if (currUser === null) {
+        res.statusCode = 404;
         //res.send("User with the username doesn't exist");
         res.send("error");
     } else {
-        const isMatch = await bcrypt.compare(password, currUser.password);
-        console.log(isMatch);
+        const isMatch = await bcrypt.compare(password, currUser.hashedPassword);
         if (isMatch) {
-            const payload = { username }; //the claims defined when creating JSON token has to be passed as payload when verifying the token
+            const payload = { userName }; //the claims defined when creating JSON token has to be passed as payload when verifying the token
             const token = jwt.sign(payload, secretKey, {
                 expiresIn: '8h'
             });
             res.cookie('token', token, { httpOnly: true });
-            res.status(200);
-            res.send('Login successful');
+            res.statusCode = 200;
+            res.send(currUser);
         } else {
-            res.status(401);
+            res.statusCode = 401;
             //res.send('Invalid credentials');
             res.send("error");
         }
