@@ -31,3 +31,19 @@ export async function fetchUser(uri, payload) {
         return err.response.data;
     }
 }
+
+export async function fetchIngredients(uri) {
+    try {
+        const response = await axios({
+            method: 'get',
+            url: `${baseUrl}${uri}`,
+        })
+        console.log(response);
+
+        return response.data;
+    }
+    catch (err) {
+        console.log(err);
+        return err.response.data;
+    }
+}

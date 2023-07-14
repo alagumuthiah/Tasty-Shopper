@@ -1,7 +1,10 @@
 import React from 'react';
 import { useLocation, useParams } from 'react-router';
 import { TextField, Typography, Button, FormControl, Select, MenuItem, FormLabel, Radio, RadioGroup, FormControlLabel } from '@mui/material';
-import { measurements, cuisineOptions, ingredientList } from '../data/sampleSharedData';
+import { measurements, cuisineOptions } from '../data/sampleSharedData';
+import { useSelector, useDispatch } from 'react-redux';
+import { listIngredients } from '../store/ingredients';
+import { fetchIngredients } from '../shared/fetchData';
 
 //check how to handle File Upload and get the data
 //handle change and handlechangedata index - how to use the same fuction to handle changes
@@ -9,6 +12,9 @@ import { measurements, cuisineOptions, ingredientList } from '../data/sampleShar
 //why useParams is called everytime when I change the input fields
 
 function FormComponent() {
+    const dispatch = useDispatch();;
+    const ingredientList = useSelector((state) => state.ingredients);
+
     const defaultValues = {
         title: "",
         servings: "",
@@ -21,10 +27,24 @@ function FormComponent() {
 
 
     const [recipeData, setRecipeData] = React.useState(defaultValues);
+
     //to prevent rendering of the component n number of times, we need to use useEffect to update the form with the recipe Data when the form is rendered as a update component
     const location = useLocation(); //to get the data passed from the component
-    //console.log(location.pathname);
     const recipeParams = useParams();
+
+    React.useEffect(() => {
+        const response = fetchIngredients('/ingredients');
+        console.log(response);
+        response
+            .then((ingredientData) => {
+                console.log(ingredientData);
+                dispatch(listIngredients(ingredientData));
+            })
+            .catch((error) => {
+                console.log('Error', error);
+            })
+    }, []);
+
     React.useEffect(() => {
         if (location.state != null) {
             const { updateRecipe } = location.state;
@@ -209,7 +229,7 @@ function FormComponent() {
                             >
                                 {ingredientList.map((item, index) => {
                                     return (
-                                        <MenuItem key={index} value={item}>{item}</MenuItem>
+                                        <MenuItem key={index} value={item.name}>{item.name}</MenuItem>
                                     )
                                 })}
                             </Select>

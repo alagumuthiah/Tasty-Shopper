@@ -1,16 +1,14 @@
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux';
-import { login, logout } from '../store/session';
+import { logout } from '../store/session';
 
 function NavBar() {
-
-    const isAuthenticated = useSelector((state) => state.isLogged.value);
-    const firstName = useSelector((state) => state.isLogged.firstName);
-    const lastName = useSelector((state) => state.isLogged.lastName);
     const dispatch = useDispatch();
-    console.log(isAuthenticated);
-    console.log(firstName);
+    const userAuthentication = useSelector((state) => state.userInfo);
+
+    console.log(userAuthentication);
+
     return (
         <div className="nav--bar">
             <AppBar position="static" sx={{ bgcolor: "#5ab1bb" }}>
@@ -33,14 +31,14 @@ function NavBar() {
                         </Link>
                     </div>
 
-                    {isAuthenticated ?
+                    {userAuthentication?.isLogged ?
                         <Button size="medium" color="primary" variant="contained" onClick={() => dispatch(logout())} >Logout</Button>
                         :
                         <Link to="/login">
                             <Button size="medium" color="primary" variant="contained">Login</Button>
                         </Link>}
-                    {firstName.length !== 0 && firstName}
-                    {lastName.length !== 0 && lastName}
+                    {userAuthentication?.firstName.length !== 0 && userAuthentication?.firstName}
+                    {userAuthentication?.lastName.length !== 0 && userAuthentication?.lastName}
                 </Toolbar>
             </AppBar>
         </div>

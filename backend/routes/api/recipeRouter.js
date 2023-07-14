@@ -31,7 +31,7 @@ recipeRoute.route("/")
                     include: [
                         {
                             model: User,
-                            attributes: ['firstName', 'lastName', 'userName']
+                            attributes: ['firstName', 'lastName', 'userName', 'id']
                         },
                         {
                             model: Ingredient,

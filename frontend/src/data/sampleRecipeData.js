@@ -124,3 +124,143 @@ const recipes = [
 ]
 
 export default recipes;
+
+// [
+//     {
+//         "title": "PaneerCurry",
+//         "cuisine": "Indian",
+//         "servings": 3,
+//         "isPublic": true,
+//         "instruction": [
+//             "Wash the Paneer and cut into cubes",
+//             "Add the spices tomato and onion"
+//         ],
+//         "User": {
+//             "firstName": "John",
+//             "lastName": "Doe",
+//             "userName": "johndoe"
+//         },
+//         "Ingredients": [
+//             {
+//                 "name": "Paneer",
+//                 "RecipeIngredient": {
+//                     "unit": "grams",
+//                     "quantity": 300
+//                 }
+//             },
+//             {
+//                 "name": "Onion",
+//                 "RecipeIngredient": {
+//                     "unit": "grams",
+//                     "quantity": 50
+//                 }
+//             },
+//             {
+//                 "name": "Tomato",
+//                 "RecipeIngredient": {
+//                     "unit": "grams",
+//                     "quantity": 100
+//                 }
+//             }
+//         ]
+//     },
+//     {
+//         "title": "Paruppu Payasam",
+//         "cuisine": "Indian",
+//         "servings": 4,
+//         "isPublic": true,
+//         "instruction": [
+//             "Boil the mong dal",
+//             "Make the jaggery syrup add coconut milk",
+//             "Add the cooked dal",
+//             "Season it with nuts"
+//         ],
+//         "User": {
+//             "firstName": "Venkatesh",
+//             "lastName": "Bhat",
+//             "userName": "venkatbhat"
+//         },
+//         "Ingredients": [
+//             {
+//                 "name": "Moong Dal",
+//                 "RecipeIngredient": {
+//                     "unit": "grams",
+//                     "quantity": 200
+//                 }
+//             },
+//             {
+//                 "name": "Jaggery",
+//                 "RecipeIngredient": {
+//                     "unit": "cup",
+//                     "quantity": 1
+//                 }
+//             }
+//         ]
+//     },
+//     {
+//         "title": "Paruppu Payasam567",
+//         "cuisine": "Indian",
+//         "servings": 4,
+//         "isPublic": true,
+//         "instruction": [
+//             "Boil the mong dal",
+//             "Make the jaggery syrup add coconut milk",
+//             "Add the cooked dal",
+//             "Season it with nuts"
+//         ],
+//         "User": {
+//             "firstName": "Venkatesh",
+//             "lastName": "Bhat",
+//             "userName": "venkatbhat"
+//         },
+//         "Ingredients": [
+//             {
+//                 "name": "Moong Dal",
+//                 "RecipeIngredient": {
+//                     "unit": "grams",
+//                     "quantity": 200
+//                 }
+//             },
+//             {
+//                 "name": "Jaggery",
+//                 "RecipeIngredient": {
+//                     "unit": "cup",
+//                     "quantity": 1
+//                 }
+//             }
+//         ]
+//     },
+//     {
+//         "title": "Tom yum Soup",
+//         "cuisine": "Thai",
+//         "servings": 2,
+//         "isPublic": true,
+//         "instruction": [
+//             "Boil all the vegetables",
+//             "Season the broth and vegetables with chilli flakes"
+//         ],
+//         "User": {
+//             "firstName": "Venkatesh",
+//             "lastName": "Bhat",
+//             "userName": "venkatbhat"
+//         },
+//         "Ingredients": []
+//     },
+//     {
+//         "title": "Paneer Burji",
+//         "cuisine": "Indian",
+//         "servings": 2,
+//         "isPublic": true,
+//         "instruction": [
+//             "Shred the Paneer",
+//             "Add Onion, Tomato and masala",
+//             "Garnish"
+//         ],
+//         "User": {
+//             "firstName": "Dhamodharan",
+//             "lastName": "Chef",
+//             "userName": "dhamuchef"
+//         },
+//         "Ingredients": []
+//     }
+// ]

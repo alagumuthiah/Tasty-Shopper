@@ -12,6 +12,8 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 # Technologies Used
 
 - React
+- Express
+- Node JS
 - Javascript
 - HTML
 - CSS
@@ -38,36 +40,33 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 # Dependecies for the Application
 
 - Material UI - for the UI components (NavBar,Card)
+- Redux - for central store state management
 
 # Database Schema
 
 ### User
 
 - id  -> primary key
-- username -> varchar
-- firstname -> varchar
-- lastname -> varchar
+- userName -> varchar
+- firstName -> varchar
+- lastName -> varchar
 - email -> varchar
-- password -> varchar
+- hashedPassword -> varchar
 
 ### Recipe
 
 - id -> primary key
-- title -> varchar(30)
-- cuisine -> varchar(15)
+- userId -> foreign key - references id from the User
+- title -> varchar
+- cuisine -> varchar
 - servings -> number
 - isPublic -> boolean
-- instructions
+- instruction -> Array
 
 ### Ingredient
 
 - id -> primary key
 - name -> varchar - name of the ingredient
-
-### Unit
-
-- id -> primary key
-- name -> varchar (Unit- cup, tablespoon, spoon, ml, grams)
 
 ### RecipeIngredient
 
@@ -75,9 +74,14 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 - recipeId -> foreign key references Recipe
 - ingredientId -> foreign key references Ingredients
 - quantity - float
-- unitId - foreign key references Units
+- unit  - Enum
 
-Multiple entries in RecipeIngredient table for a recipe
+### Database Associations
+
+- User -> has many Recipes
+- Recipe -> belongs to a User
+- Ingredients <-> Recipe (Many-to-Many)
+- RecipeIngredient  -> to establish the many-to-many relationship with Recipe and Ingredient
 
 # Steps to test and build the application
 

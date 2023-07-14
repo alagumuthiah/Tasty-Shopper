@@ -17,9 +17,10 @@ ingredientRoute.route("/")
     .get(async (req, res, next) => {
         console.log(req.query);
         res.statusCode = 200;
+        let ingredientObj = null;
         if (req.query.name !== undefined) { // check if there are any better method for checking if query params is present or not.
             let ingredientName = req.query.name;
-            const ingredientObj = await Ingredient.findOne({
+            ingredientObj = await Ingredient.findOne({
                 where: {
                     name: {
                         [Op.iLike]: `%${ingredientName}%`
@@ -27,18 +28,19 @@ ingredientRoute.route("/")
                 },
                 attributes: ['id', 'name']
             });
-            if (ingredientObj === null) {
-                res.status(404);
-                let errObj = { error: "Ingredient with the given Ingredient name doesn't exist" };
-                res.json(errObj);
-            } else {
-                res.status(200);
-                res.json(ingredientObj);
-            }
+        } else { //without query parameters query the entire table and return the result
+            ingredientObj = await Ingredient.findAll({
+                attributes: ['name']
+            });
+        }
+
+        if (ingredientObj === null) {
+            res.status(404);
+            let errObj = { error: "Ingredient with the given Ingredient name doesn't exist" };
+            res.json(errObj);
         } else {
-            res.statusCode(400);
-            let errObj = { error: "Bad request, query paramter not passed" };
-            res.json(errObj)
+            res.status(200);
+            res.json(ingredientObj);
         }
     })
 
@@ -99,7 +101,6 @@ ingredientRoute.route("/:id")
         res.statusCode = 200;
         res.send('DELTE method');
     })
-
 
 
 export default ingredientRoute;

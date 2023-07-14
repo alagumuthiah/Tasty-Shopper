@@ -5,30 +5,30 @@ import React from "react";
 //import fetchRecipes from '../shared/fetchData';
 import Button from "@mui/material/Button";
 import recipes from '../data/sampleRecipeData';
+import { searchMyRecipes, resetMyRecipes } from "../store/myRecipes";
+import { useSelector, useDispatch } from 'react-redux';
 
 function MyRecipes() {
 
     /* Import the sample data created and populate the data for my recipes with the sample data*/
+    const myRecipesData = useSelector((state) => state.myRecipes);
+    const dispatch = useDispatch();
     const [searchText, setSearchText] = React.useState('');
-    const [recipeData, setRecipeData] = React.useState([]);
+
     React.useEffect(() => {
-        /*Update the useEffect by the API call, after creating the API*/
-        /*if (searchText.length > 0) {
-            const response = fetchRecipes(url, searchText);
-            response.then(data => setRecipeData(data));
-        }*/
         if (searchText.length > 0) {
-            //search in based on the recipe title
+            //this has to be replaced by fetching the code from database
             const filterRecipe = recipes.filter((recipe) => {
                 return recipe['title'].toLowerCase().includes(searchText);
-            })
-            setRecipeData(filterRecipe);
+            });
+            dispatch(searchMyRecipes(filterRecipe));
+
         } else {
-            setRecipeData([]);
+            dispatch(resetMyRecipes());
         }
     }, [searchText])
 
-    const recipeCards = recipeData.map((recipe) => {
+    const recipeCards = myRecipesData.map((recipe) => {
         return (
             <RecipeCard recipe={recipe} />
         )
