@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useParams } from 'react-router';
 import { TextField, Typography, Button, FormControl, Select, MenuItem, FormLabel, Radio, RadioGroup, FormControlLabel } from '@mui/material';
-import { measurements, cuisineOptions } from '../data/sampleSharedData';
+import { units, cuisineOptions } from '../data/sampleSharedData';
 import { useSelector, useDispatch } from 'react-redux';
 import { listIngredients } from '../store/ingredients';
 import { fetchIngredients } from '../shared/fetchData';
@@ -19,7 +19,7 @@ function FormComponent() {
         title: "",
         servings: "",
         cuisine: "",
-        instructions: [],
+        instruction: [],
         ingredients: [],
         image: "",
         isPublic: ""
@@ -31,7 +31,7 @@ function FormComponent() {
     //to prevent rendering of the component n number of times, we need to use useEffect to update the form with the recipe Data when the form is rendered as a update component
     const location = useLocation(); //to get the data passed from the component
     const recipeParams = useParams();
-
+    console.log(location, recipeParams);
     React.useEffect(() => {
         const response = fetchIngredients('/ingredients');
         console.log(response);
@@ -49,14 +49,17 @@ function FormComponent() {
         if (location.state != null) {
             const { updateRecipe } = location.state;
             console.log(updateRecipe);
+            const ingredients = updateRecipe.Ingredients.map((ingredient) => {
+                return { "name": ingredient.name, "quantity": ingredient.RecipeIngredient.quantity, "unit": ingredient.RecipeIngredient.unit };
+            })
             setRecipeData((prevData) => ({ //check if there is a better way to update my recipeData state
                 ...prevData,
                 title: updateRecipe.title,
                 servings: updateRecipe.servings,
                 cuisine: updateRecipe.cuisine,
-                isPublic: updateRecipe.isPublic,
-                instructions: updateRecipe.instructions,
-                ingredients: updateRecipe.ingredients
+                isPublic: updateRecipe.isPublic ? 'Yes' : 'No',
+                instruction: updateRecipe.instruction,
+                ingredients: ingredients
             }))
         }
     }, [location.state])
@@ -111,7 +114,7 @@ function FormComponent() {
     }
 
     function handleAddWithIndex(event) {
-        const dataToBeAdded = (event.target.name === "ingredients") ? { name: '', quantity: '', measurement: '' } : "";
+        const dataToBeAdded = (event.target.name === "ingredients") ? { name: '', quantity: '', unit: '' } : "";
         setRecipeData((prevData) => ({
             ...prevData,
             [event.target.name]: [...recipeData[event.target.name], dataToBeAdded]
@@ -197,11 +200,11 @@ function FormComponent() {
             </div>
             <div className="spaced-element">
                 <FormLabel>Instructions</FormLabel>
-                {recipeData.instructions.map((instruction, index) => {
+                {recipeData.instruction.map((instruction, index) => {
                     return (
                         <div key={index} style={{ padding: "10px" }}>
                             <TextField
-                                name="instructions"
+                                name="instruction"
                                 type="text"
                                 value={instruction}
                                 multiline
@@ -209,11 +212,11 @@ function FormComponent() {
                                 maxRows={8}
                                 onChange={event => handleChangeWithIndex(event, index)}
                             />
-                            <Button name="instructions" variant="contained" onClick={event => handleDeleteWithIndex(event, index)}>Delete</Button>
+                            <Button name="instruction" variant="contained" onClick={event => handleDeleteWithIndex(event, index)}>Delete</Button>
                         </div>
                     )
                 })}
-                <Button name="instructions" variant="contained" onClick={handleAddWithIndex}>Add</Button>
+                <Button name="instruction" variant="contained" onClick={handleAddWithIndex}>Add</Button>
 
             </div>
             <div className="spaced-element">
@@ -235,21 +238,21 @@ function FormComponent() {
                             </Select>
                             <TextField
                                 name="quantity"
-                                type="number" step="0.0001"
+                                type="number" step="0.0001" //check what this step is for?
                                 onChange={event => handleChangeIngredients(event, index)}
                                 label="Quantity"
                                 value={ingredient.quantity}
                             />
 
                             <Select
-                                name="measurement"
+                                name="unit"
                                 onChange={event => handleChangeIngredients(event, index)}
-                                label="Measurement"
-                                value={ingredient.measurement}
+                                label="Unit"
+                                value={ingredient.unit}
                             >
-                                {measurements.map((measurement, index) => {
+                                {units.map((unit, index) => {
                                     return (
-                                        <MenuItem key={index} value={measurement}>{measurement}</MenuItem>
+                                        <MenuItem key={index} value={unit}>{unit}</MenuItem>
                                     )
                                 })}
                             </Select>

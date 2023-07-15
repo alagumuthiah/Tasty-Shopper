@@ -44,7 +44,7 @@ recipeRoute.route("/")
                             [Op.iLike]: `%${recipeName}%`
                         }
                     },
-                    attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction']
+                    attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
                 });
                 if (recipeObj.length === 0) {
                     res.status(404);

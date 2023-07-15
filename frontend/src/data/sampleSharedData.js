@@ -1,4 +1,4 @@
-export const measurements = ["cup", "teaspoon", "tablespoon", "ml", "liters", "grams", "kilograms", "oz", "number"]; //later to be populated with data from database
+export const units = ["cup", "teaspoon", "tablespoon", "ml", "liters", "grams", "kilograms", "oz", "number"]; //later to be populated with data from database
 
 export const cuisineOptions = ["Indian", "Mexican", "Thai", "Chinese", "American", "Italian"];
 

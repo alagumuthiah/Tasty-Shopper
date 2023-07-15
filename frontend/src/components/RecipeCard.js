@@ -1,4 +1,4 @@
-import { Card, CardActionArea, CardMedia, CardContent, Typography } from "@mui/material"
+import { Card, CardActionArea, CardMedia, CardContent, Typography, Stack } from "@mui/material"
 import { Link } from 'react-router-dom';
 
 export default function RecipeCard(props) {
@@ -9,9 +9,13 @@ export default function RecipeCard(props) {
       <Card className="card-class">
         <CardActionArea>
           <CardMedia sx={{ maxHeight: 150 }} component="img" image={imgUrl} alt={props.recipe.title} />
-          <CardContent>
-            <Typography variant="h4"> {props.recipe.title}</Typography>
-            <Typography variant="body"> {props.recipe.cuisine} </Typography>
+          <CardContent sx={{ maxHeight: 120 }}>
+            <Stack>
+              <Typography variant="h5"> {props.recipe.title}</Typography>
+              <Typography variant="body"> {props.recipe.cuisine} </Typography>
+              <Typography variant="body">{props.recipe.User?.firstName} {props.recipe.User?.lastName}</Typography>
+            </Stack>
+
           </CardContent>
         </CardActionArea>
 
