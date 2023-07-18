@@ -1,8 +1,8 @@
-import express from 'express';
+import express, { query, request } from 'express';
 import { User, Recipe, Ingredient, RecipeIngredient } from '../../db/models';
 import { Validator } from 'express-json-validator-middleware';
 import db from '../../db/models/index';
-const { sequelize } = require("sequelize");
+const { Op } = require("sequelize")
 const recipeRoute = express.Router();
 
 const { validate } = new Validator();
@@ -122,6 +122,13 @@ recipeRoute.route("/")
     })
 
     //when one of the query doesn't work, that condition needs to be handled
+
+    //  When a data is submitted to create a recipe, the followings APIs has to be called:
+    // 1.The JSON schema - input is validated
+    // 2.Create request
+    //     -> to Recipe table
+    //     -> create entries in Ingredient table if not present
+    //     -> create entries in RecipeIngredient table
     .post(validate({ body: recipeSchema }), async (req, res, next) => {
 
         const createRecipeIngredientTransaction = await db.sequelize.transaction();
@@ -226,27 +233,150 @@ recipeRoute.route("/:id")
 
 
     })
+    // For update Recipe:
+    // 1. Validate the JSON format using the JSON recipeSchema
+    // 2. Find from Recipe table if the recipe with the given id exist
+    //     if present:
+    //            Update the details of the Recipe table
+    //            Query the ingredient table to gte the ingredient id of the ingredients in the request
+    //            Query the RecipeIngredient table and get the ingredient is that are already present for this specifc Recipe
+    //            Store the common ingredients, newly added and tobedeleted ingredients by comparing the ingredients fetched from the above two steps
+    //         if present in both:
+    //         update query
+    //     if present in first:
+    //         create query
+    //     if present in second:
+    //         delete query
+    //     else:
+    //         return 404 error
+
+    .put(validate({ body: recipeSchema }),
+        async (req, res, next) => {
+            let updateRequest = req.body;
+            let recipeId = req.params.id;
+            let recipeDetail = await Recipe.findByPk(recipeId);
+            if (recipeDetail !== null) {
+                try {
+                    await recipeDetail.update({
+                        title: updateRequest.title,
+                        cuisine: updateRequest.cuisine,
+                        servings: updateRequest.servings,
+                        isPublic: updateRequest.isPublic,
+                        instruction: updateRequest.instruction,
+                    });
+                    let ingredients = updateRequest.ingredients;
+
+                    let oldIngredients = await RecipeIngredient.findAll({
+                        where: { RecipeId: recipeId },
+                        attributes: ['RecipeId', 'IngredientId', 'quantity', 'unit']
+                    });
+
+                    let newIngredients = await Promise.all(ingredients.map(async (ingredient) => {
+                        let [ingredientDetail] = await Ingredient.findOrCreate({
+                            where: { name: ingredient.name }
+                        });
+                        return { IngredientId: ingredientDetail.id, quantity: ingredient.quantity, unit: ingredient.unit };
+                    }));
+                    let oldIngredientsData = oldIngredients.map((old) => {
+                        return old.dataValues;
+                    });
+                    let oldIds = oldIngredientsData.map((old) => {
+                        return old.IngredientId;
+                    });
+                    let newIds = newIngredients.map((newElt) => {
+                        return newElt.IngredientId;
+                    });
+
+                    console.log(oldIngredientsData);
+
+                    console.log(newIngredients);
+                    let commonIngredients = newIngredients.filter((ingredient) => {
+                        return oldIds.indexOf(ingredient.IngredientId) !== -1;
+                    });
+                    let newlyAddedIngredients = newIngredients.filter((ingredient) => {
+                        return oldIds.indexOf(ingredient.IngredientId) === -1;
+                    });
+                    let toBeDeleted = oldIngredientsData.filter((old) => {
+                        return newIds.indexOf(old.IngredientId) === -1;
+                    });
+                    console.log(newlyAddedIngredients); //created
+                    console.log(commonIngredients); //updated
+                    console.log(toBeDeleted); //deleted
+                    await Promise.all(newlyAddedIngredients.map(async (newlyAdded) => {
+                        await RecipeIngredient.create({
+                            IngredientId: newlyAdded.IngredientId,
+                            RecipeId: recipeId,
+                            quantity: newlyAdded.quantity,
+                            unit: newlyAdded.unit
+                        })
+                    }));
+                    await Promise.all(commonIngredients.map(async (commonIngredient) => {
+                        await RecipeIngredient.update({
+                            quantity: commonIngredient.quantity,
+                            unit: commonIngredient.unit
+                        }, {
+                            where: {
+                                IngredientId: commonIngredient.IngredientId,
+                                RecipeId: recipeId
+                            }
+                        });
+                    }));
+                    await Promise.all(toBeDeleted.map(async (toBeDeletedElt) => {
+                        await RecipeIngredient.destroy({
+                            where: {
+                                IngredientId: toBeDeletedElt.IngredientId,
+                                RecipeId: recipeId
+                            }
+                        });
+                    }));
+
+                } catch (error) {
+                    console.log(error, 'Error')
+                    await createRecipeIngredientModelTrans.rollback();
+                    res.statusCode = 500;
+                    let errObj = { error: `Internal Server Error ${error}` }
+                    res.json(errObj);
+                }
+                res.statusCode = 204;
+                res.json('UPDATE');
+
+            } else {
+                res.statusCode = 404;
+                let errObj = { error: "Recipe with the given Recipe Id doesn't exist" };
+                res.json(errObj);
+            }
+        })
+
+    // Find the entries in recipeIngredient table and delete all entries with the given id
+    // Delete the entry in the recipe table
+    // to check if the entry in ingredient table to be deleted or not
+
+    .delete(async (req, res, next) => {
+        let recipeId = req.params.id;
+        console.log(recipeId);
+        try {
+            await RecipeIngredient.destroy({
+                where: {
+                    RecipeId: recipeId
+                }
+            });
+            await Recipe.destroy({
+                where: {
+                    id: recipeId
+                }
+            });
+        } catch (error) {
+            console.log(error, 'Error')
+            await createRecipeIngredientModelTrans.rollback();
+            res.statusCode = 500;
+            let errObj = { error: `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
+
+
+        res.statusCode = 200;
+        res.json('DELETE');
+
+    })
 
 export default recipeRoute
-
-/* When a data is submitted to create a recipe, the followings APIs has to be called:
-1.GET API given username -> userId ( or directly have the userId data and pass it to the API)
-2.CREATE (POST) API call for Recipe table - populate title, servings, cuisine, isPublic, instructions, userId fetched from the API call in Step 1 (res.rows[0]- will return the id of the resource that is created)
-3.Get the newly created recipe Id
-4.We can either query our ingredient table for getting the ingredient ID or already have it stored. With the ingredient id, we have other information like qty and measurement from the data payload. Insert a new row in the recipeIngredient table for every ingredient.
-
-Using sequelize associations we can perform the create recipe query (with only the recipe and user involved)
-1.Create a Recipe object using <Model_name>.create() method
-2.Get the user details by using <Model_name>.findOne() method
-3.Sequelize association supports various methods for every model using the association -  recipeObject.addUser(user object)
-addUser() - is the method made available
-*/
-
-/* Limits and pagination can be used when we fetch recipes based on search text
-// Fetch 10 instances/rows
-Project.findAll({ limit: 10 });
-
-For querying one main model and other associated models - use include option in findOne and findAll
-
-in many-to-many relation => we can specify conditions
-*/
