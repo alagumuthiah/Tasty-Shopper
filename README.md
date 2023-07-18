@@ -1,3 +1,7 @@
+# Overview
+
+The Recipe app is a Repository of Recipes where users can maintain their own custom recipes and upload recipes so that it can be viewed by other users. It also supports creating a grocery list by selecting recipes of the week.
+
 # Alagu's Recipe Application
 
 This Application was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -82,6 +86,29 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 - Recipe -> belongs to a User
 - Ingredients <-> Recipe (Many-to-Many)
 - RecipeIngredient  -> to establish the many-to-many relationship with Recipe and Ingredient
+
+### Backend Routes - API
+
+# Users
+
+SignUp - POST  /users/login
+Login - POST /users/login
+Logout - DELETE /users/logout
+
+# Recipes
+
+View Recipes - GET /recipes/?queryParams
+Add Recipe - POST /recipes
+View specific Recipe - GET /recipes/:recipeId
+Update a specific Recipe - UPDATE /recipes/:recipeId
+Delete a specifc Recipe - DELETE /recipes/:recipeId
+
+# Ingredients
+
+View Ingredient - GET /ingredients/?queryParams
+View Specific Ingredient - GET /ingredients/:ingredientId
+Add Ingredient - POST /ingredients
+Update Specifc Ingredient - PUT /ingredient/:ingredientId
 
 # Steps to test and build the application
 

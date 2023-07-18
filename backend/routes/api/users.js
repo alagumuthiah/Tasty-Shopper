@@ -1,6 +1,4 @@
 import express from 'express';
-import bodyParser from 'body-parser';
-//import User from '../../models/user';
 import jwt from 'jsonwebtoken';
 import authenticate from '../../auth';
 import { User } from '../../db/models';
@@ -9,8 +7,6 @@ import { secretKey, saltRounds } from '../../secret';
 
 const userRoute = express.Router();
 
-
-userRoute.use(bodyParser.json());
 
 //Given the userId - it returns the user details
 userRoute.get('/:id', async function (req, res) {
