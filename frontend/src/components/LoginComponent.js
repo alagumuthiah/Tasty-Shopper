@@ -5,29 +5,48 @@ import React from 'react';
 import { fetchUser } from "../shared/fetchData";
 import { login } from '../store/session';
 import { useDispatch } from 'react-redux';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 function LoginComponent() {
     const dispatch = useDispatch();
     const defaultValues = {
-        userName: "",
-        password: ""
+        userName: '',
+        password: ''
     }
-    const [formData, setFormData] = React.useState(defaultValues);
-    const [isSubmitted, setIsSubmitted] = React.useState(false);
 
+    const formik = useFormik({
+        initialValues: defaultValues,
+        validationSchema: Yup.object({
+            userName: Yup.string()
+                .min(3, 'Username has to be atleast 3 characters')
+                .max(40, 'Username has to be less than 40 characters')
+                .required('Username is a required field'),
+            password: Yup.string()
+                .min(3, 'Password has to be atleast 3 characters')
+                .max(40, 'Password has to be less than 40 characters')
+                .required('Password is a required field'),
+        }),
+        onSubmit: values => {
+            alert(JSON.stringify(values));
+            formik.setSubmitting({ isSubmitting: true });
+        }
+    });
     React.useEffect(() => {
-        if (isSubmitted) {
+        if (formik.isSubmitting && !formik.isValidating) {
             console.log('Call login user');
 
-            const response = fetchUser('/users/login', formData);
+            const response = fetchUser('/users/login', formik.values);
             console.log(response);
             response
                 .then((userData) => {
                     console.log(userData);
-                    if (userData !== "error") {
+                    if (userData.hasOwnProperty("userName")) {
                         console.log(userData);
                         alert('Login successful');
                         dispatch(login(userData));
+                    } else {
+                        alert(` Error: ${userData.Error}`);
                     }
 
                 })
@@ -35,47 +54,39 @@ function LoginComponent() {
                     alert('Error');
                     console.log('Error', error);
                 })
-            setIsSubmitted(false);
+            formik.handleReset();
+
         }
-    }, [isSubmitted]);
-
-    function handleChange(event) {
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            [event.target.name]: event.target.value,
-        }))
-    }
-
-
-    function handleSubmit(event) {
-        console.log(event);
-        event.preventDefault();
-        console.log(formData.userName, formData.password);
-        setIsSubmitted(true);
-    }
-
+    }, [formik.isSubmitting]);
 
     //Use useEffect to send the data to the database and authenticate the user
+    //Check for the Error, it shows login successful when I submit an empty form
     return (
-        <form class="form-section" onSubmit={handleSubmit}>
+        <form class="form-section" onSubmit={formik.handleSubmit}>
             <Typography>Login to view custom recipes</Typography>
             <div class="spaced-element">
                 <TextField
                     id="userName"
                     name="userName"
                     type="text"
-                    onChange={handleChange}
-                    label="userName"
-                    value={formData.userName} />
+                    label="UserName"
+                    onChange={formik.handleChange}
+                    value={formik.values.userName}
+                    error={formik.touched.userName && Boolean(formik.errors.userName)}
+                    helperText={formik.touched.userName && formik.errors.userName}
+                />
             </div>
             <div class="spaced-element">
                 <TextField
                     id="password"
                     name="password"
                     type="password"
-                    onChange={handleChange}
                     label="Password"
-                    value={formData.password} />
+                    onChange={formik.handleChange}
+                    value={formik.values.password}
+                    error={formik.touched.password && Boolean(formik.errors.password)}
+                    helperText={formik.touched.password && formik.errors.password} />
+
             </div>
             <div class="spaced-element">
                 <ButtonComponent text="Login" />

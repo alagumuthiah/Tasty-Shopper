@@ -4,123 +4,146 @@ import React from 'react';
 import { fetchUser } from "../shared/fetchData";
 import { useDispatch } from 'react-redux';
 import { login } from '../store/session';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 function SignUpComponent() {
     const dispatch = useDispatch();
     const defaultValues = {
-        userName: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        confirmPassword: ""
+        userName: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
     }
 
-    //how to use ButtonComponent - check
-    /* 1. Get the data from the fields in handleSubmit, use a submitted variable to denote that data is submitted
-    2. after submitting, useEffect has to be used as it in an external API call - check if userName and password match => call the signup API with the data. Handle the response from signup API
-    */
-    const [signUpData, setSignUpData] = React.useState(defaultValues);
-    const [isSubmitted, setIsSubmitted] = React.useState(false);
+    const formik = useFormik({
+        initialValues: defaultValues,
+        validationSchema: Yup.object({
+            userName: Yup.string()
+                .min(3, 'Username has to be atleast 3 characters')
+                .max(40, 'Username has to be less than 40 characters')
+                .required('Username is required'),
+            firstName: Yup.string()
+                .min(4, 'Firstname has to be least 4 characters long')
+                .max(40, 'firstname has to less than 40 chacters')
+                .required('Firstname is a required field'),
+            lastName: Yup.string()
+                .min(4, 'Lastname has to be least 4 characters long')
+                .max(40, 'Lastname has to less than 40 chacters')
+                .required('Lastname is a required field'),
+            password: Yup.string()
+                .min(5, 'Password has to be atleast 5 characters')
+                .max(40, 'Password has to less than 40 characters')
+                .required('Password is required'),
+            confirmPassword: Yup.string()
+                .required('confirm Password is required')
+                .oneOf([Yup.ref('password'), null], 'Passwords must match'),
+            email: Yup.string()
+                .email('Invalid email Address')
+                .required('Email is Required')
+        }),
+        onSubmit: values => {
+            alert(JSON.stringify(values));
+            formik.setSubmitting({ isSubmitting: true });
+        }
+    })
 
     React.useEffect(() => {
-        if (isSubmitted) {
-            const response = fetchUser('/users/signup', signUpData);
+        if (formik.isSubmitting && !formik.isValidating) {
+            const response = fetchUser('/users/signup', formik.values);
             console.log(response); //error handling needs to be implemented
             response
                 .then((userData) => {
-                    if (userData !== 'error') {
+                    if (userData.hasOwnProperty("userName")) {
+                        alert('Sign up successful');
                         dispatch(login(userData));
+                    } else {
+                        alert(` Error: ${userData.Error}`);
                     }
-
                 })
                 .catch((error) => {
-                    console.log('Erro');
+                    alert(`Error:${error}`);
                 })
-            setIsSubmitted(false);
+            formik.handleReset();
         }
-    }, [isSubmitted]);
-
-    function handleChange(event) {
-        setSignUpData((prevSignUpData) => ({
-            ...prevSignUpData,
-            [event.target.name]: event.target.value
-        })
-        )
-    }
-
-    function handleReset() {
-        setSignUpData(defaultValues);
-    }
-
-    function handleSubmit(event) {
-        event.preventDefault();
-        console.log(signUpData);
-        setIsSubmitted(true);
-        alert(`Data submitted with the values ${signUpData.userName}`);
-    }
+    }, [formik.isSubmitting]);
 
     return (
-        <form className="form-section" onSubmit={handleSubmit}>
+        <form className="form-section" onSubmit={formik.handleSubmit}>
             <Typography>New User? Please Sign Up</Typography>
             <div className="spaced-element">
                 <TextField
                     id="userName"
                     type="text"
                     name="userName"
-                    value={signUpData.userName}
-                    label="userName"
-                    onChange={handleChange} />
+                    value={formik.values.userName}
+                    label="UserName"
+                    onChange={formik.handleChange} />
+                {formik.touched.userName && formik.errors.userName ?
+                    <div className='error-red'>{formik.errors.userName}</div> : null}
             </div>
             <div className="spaced-element">
                 <TextField
                     id="firstName"
                     type="text"
                     name="firstName"
-                    value={signUpData.firstName}
+                    value={formik.values.firstName}
                     label="First Name"
-                    onChange={handleChange} />
+                    onChange={formik.handleChange} />
+                {formik.touched.firstName && formik.errors.firstName ?
+                    <div className='error-red'>{formik.errors.firstName}</div> : null}
             </div>
             <div className="spaced-element">
                 <TextField
                     id="lastName"
                     type="text"
                     name="lastName"
-                    value={signUpData.lastName}
+                    value={formik.values.lastName}
                     label="Last Name"
-                    onChange={handleChange} />
+                    onChange={formik.handleChange} />
+                {formik.touched.lastName && formik.errors.lastName ?
+                    <div className='error-red'>{formik.errors.lastName}</div> : null}
             </div>
             <div className="spaced-element">
                 <TextField
                     id="email"
                     type="email"
                     name="email"
-                    value={signUpData.email}
+                    value={formik.values.email}
                     label="Email"
-                    onChange={handleChange} />
+                    formnovalidate="formnovalidate"
+                    onChange={formik.handleChange} />
+                {formik.touched.email && formik.errors.email ?
+                    <div className='error-red'>{formik.errors.email}</div> : null}
             </div>
             <div className="spaced-element">
                 <TextField
                     id="password"
                     type="password"
                     name="password"
-                    value={signUpData.password}
+                    value={formik.values.password}
                     label="Password"
-                    onChange={handleChange} />
+                    onChange={formik.handleChange} />
+                {formik.touched.password && formik.errors.password ?
+                    <div className='error-red'>{formik.errors.password}</div> : null}
             </div>
             <div className="spaced-element">
                 <TextField
                     id="confirmPassword"
                     type="password"
                     name="confirmPassword"
-                    value={signUpData.confirmPassword}
+                    value={formik.values.confirmPassword}
                     label="Confirm Password"
-                    onChange={handleChange} />
+                    onChange={formik.handleChange} />
+                {formik.touched.confirmPassword && formik.errors.confirmPassword ?
+                    <div className='error-red'>{formik.errors.confirmPassword}</div> : null}
             </div>
 
             <div className="spaced-element">
                 <Button className="button-type" variant="contained" type="submit">Sign Up</Button>
-                <Button className="button-type" variant="contained" onClick={handleReset}>Cancel</Button>
+                <Button className="button-type" variant="contained" onClick={formik.handleReset}>Cancel</Button>
             </div>
             <div>
                 <Typography>Login to your account<Link to="/login">Login</Link></Typography>

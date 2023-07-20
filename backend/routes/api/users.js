@@ -38,7 +38,8 @@ userRoute.get('/:id', async function (req, res) {
     4.If not create a new entry in the database for the user
     5.After creating an entry - create a JSON web token with expiration and set the JSON web token in the cookie
   */
-//Error handling to be implemented with proper error messages
+
+//Check how the hashed password can be removed from the object in login and signup methods
 
 userRoute.post('/signup', async function (req, res) {
     const { userName, firstName, lastName, email, password } = req.body;
@@ -46,8 +47,7 @@ userRoute.post('/signup', async function (req, res) {
     const currUser = await User.findOne({ where: { userName: userName }, attributes: ['userName', 'firstName', 'lastName', 'hashedPassword'] });
     if (currUser !== null) {
         res.statusCode = 403;
-        //res.send(`User with the username ${username} already exist`);
-        res.send("error");
+        res.json({ "Error": `User with the username ${userName} already exist` });
     } else {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const newUser = await User.create({
@@ -63,12 +63,11 @@ userRoute.post('/signup', async function (req, res) {
         });
         res.cookie('token', token);
         res.statusCode = 200;
-        res.send(newUser);
+        res.json(newUser);
     }
 
 });
 
-//Error handling to be implemented with proper error messages
 userRoute.post('/login', async function (req, res) {
     const { userName, password } = req.body;
     console.log(userName, password);
@@ -79,8 +78,7 @@ userRoute.post('/login', async function (req, res) {
     console.log(currUser);
     if (currUser === null) {
         res.statusCode = 404;
-        //res.send("User with the username doesn't exist");
-        res.send("error");
+        res.json({ "Error": "User with the username doesn't exist" });
     } else {
         const isMatch = await bcrypt.compare(password, currUser.hashedPassword);
         if (isMatch) {
@@ -90,11 +88,10 @@ userRoute.post('/login', async function (req, res) {
             });
             res.cookie('token', token, { httpOnly: true });
             res.statusCode = 200;
-            res.send(currUser);
+            res.json(currUser);
         } else {
             res.statusCode = 401;
-            //res.send('Invalid credentials');
-            res.send("error");
+            res.json({ "Error": "Invalid credentials" });
         }
     }
 
