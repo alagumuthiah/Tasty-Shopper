@@ -1,11 +1,15 @@
-import express, { query, request } from 'express';
+import express from 'express';
 import { User, Recipe, Ingredient, RecipeIngredient } from '../../db/models';
 import { Validator } from 'express-json-validator-middleware';
+import jwt from 'jsonwebtoken';
+import { secretKey } from '../../secret';
+import authenticate from '../../auth';
 import db from '../../db/models/index';
 const { Op } = require("sequelize")
 const recipeRoute = express.Router();
 
 const { validate } = new Validator();
+const { query, validationResult } = require('express-validator');
 
 const recipeSchema = {
     type: 'object',
@@ -56,6 +60,7 @@ const recipeSchema = {
     }
 };
 
+
 recipeRoute.route("/")
     .all((req, res, next) => {
         //irrespective of the method type, this all method is executed first and then it is passed to the specifc method type that it is called.
@@ -68,58 +73,63 @@ recipeRoute.route("/")
        External API also has offset as optional parameter
     include validations for query parameters
     */
-    .get(async (req, res, next) => {
-        console.log(req.query);
-        if (req.query.name !== undefined) {
-            let recipeName = req.query.name;
-            let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
-            let limit = 5;
-            try {
-                const recipeObj = await Recipe.findAll({
-                    limit: limit,
-                    offset: (pageNumber - 1) * limit,
-                    include: [
-                        {
-                            model: User,
-                            attributes: ['firstName', 'lastName', 'userName', 'id']
+    //check for the type of the data passed as query parameter
+    .get(query('name')
+        .notEmpty().withMessage('Query parameter name for search cannot be empty and it takes string value'),
+        //.isString()
+        async (req, res, next) => {
+            console.log(req.query);
+            const result = validationResult(req);
+            if (result.isEmpty()) {
+                let recipeName = req.query.name;
+                let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
+                let limit = 5;
+                try {
+                    const recipeObj = await Recipe.findAll({
+                        limit: limit,
+                        offset: (pageNumber - 1) * limit,
+                        include: [
+                            {
+                                model: User,
+                                attributes: ['firstName', 'lastName', 'userName', 'id']
+                            },
+                            {
+                                model: Ingredient,
+                                attributes: ['name'],
+                                through: { attributes: ['unit', 'quantity'] }
+                            },
+                        ],
+                        where: {
+                            title: {
+                                [Op.iLike]: `%${recipeName}%`
+                            }
                         },
-                        {
-                            model: Ingredient,
-                            attributes: ['name'],
-                            through: { attributes: ['unit', 'quantity'] }
-                        },
-                    ],
-                    where: {
-                        title: {
-                            [Op.iLike]: `%${recipeName}%`
-                        }
-                    },
-                    attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
-                });
-                if (recipeObj.length === 0) {
-                    res.statusCode = 404;
-                    let errObj = { error: "Recipe with the given Recipe name doesn't exist" };
-                    res.json(errObj);
-                } else {
-                    res.statusCode = 200;
-                    const recipeData = recipeObj.map((recipe) => {
-                        return (recipe.dataValues)
-                    })
-                    res.json(recipeData);
+                        attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
+                    });
+                    if (recipeObj.length === 0) {
+                        res.statusCode = 404;
+                        let errObj = { error: "Recipe with the given Recipe name doesn't exist" };
+                        res.json(errObj);
+                    } else {
+                        res.statusCode = 200;
+                        const recipeData = recipeObj.map((recipe) => {
+                            return (recipe.dataValues)
+                        })
+                        res.json(recipeData);
+                    }
                 }
-            }
-            catch (error) {
-                res.statusCode = 500;
-                let errObj = { error: `Internal Server Error ${error}` }
-                res.json(errObj);
-            }
+                catch (error) {
+                    res.statusCode = 500;
+                    let errObj = { error: `Internal Server Error ${error}` }
+                    res.json(errObj);
+                }
 
-        } else {
-            res.statusCode = 400;
-            let errObj = { error: "Bad request, query paramter not passed" };
-            res.json(errObj)
-        }
-    })
+            } else {
+                res.statusCode = 400;
+                let errObj = { "Error": result.array() };
+                res.json(errObj)
+            }
+        })
 
     //when one of the query doesn't work, that condition needs to be handled
 
@@ -129,7 +139,7 @@ recipeRoute.route("/")
     //     -> to Recipe table
     //     -> create entries in Ingredient table if not present
     //     -> create entries in RecipeIngredient table
-    .post(validate({ body: recipeSchema }), async (req, res, next) => {
+    .post(validate({ body: recipeSchema }), authenticate, async (req, res, next) => {
 
         const createRecipeIngredientTransaction = await db.sequelize.transaction();
         const createRecipeIngredientModelTrans = await db.sequelize.transaction();
@@ -159,7 +169,7 @@ recipeRoute.route("/")
         catch (error) {
             await createRecipeIngredientTransaction.rollback();
             res.statusCode = 500;
-            let errObj = { error: `Internal Server Error ${error}` }
+            let errObj = { "Error": `Internal Server Error ${error}` }
             res.json(errObj);
         }
 
@@ -181,15 +191,152 @@ recipeRoute.route("/")
             console.log(error, 'Error')
             await createRecipeIngredientModelTrans.rollback();
             res.statusCode = 500;
-            let errObj = { error: `Internal Server Error ${error}` }
+            let errObj = { "Error": `Internal Server Error ${error}` }
             res.json(errObj);
         }
     })
 
+recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
+    let currUserName = req.userName;
+    console.log(currUserName);
+    let limit = 5;
+    let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
+    try {
+        const user = await User.findOne({
+            where: {
+                userName: currUserName
+            }
+        });
+        console.log(user.id);
+        const recipeObj = await Recipe.findAll({
+            limit: limit,
+            offset: (pageNumber - 1) * limit,
+            include: {
+                model: User,
+                attributes: ['firstName', 'lastName', 'userName']
+            },
+            include: [
+                {
+                    model: User,
+                    attributes: ['firstName', 'lastName']
+                },
+                {
+                    model: Ingredient,
+                    attributes: ['name'],
+                    through: { attributes: ['unit', 'quantity'] }
+                }
+            ],
+            where: { userId: user.id },
+            attributes: ['title', 'cuisine', 'servings', 'instruction']
+
+        });
+        if (recipeObj === null || recipeObj.length === 0) {
+            res.statusCode = 404;
+            let errObj = { "Error": "You have no recipes created" };
+            res.json(errObj);
+        } else {
+            console.log(recipeObj);
+            res.statusCode = 200;
+            res.json(recipeObj);
+        }
+    }
+    catch (error) {
+        res.statusCode = 500;
+        let errObj = { "Error": `Internal Server Error ${error}` }
+        res.json(errObj);
+    }
+});
+
+// 1.Validate if the user is logged in
+// 2.If logged in:
+//     The where clause by including recipes created by the user and all public recipes
+// 3.else:
+//     Modify the where clause by including only the recipes that are public
+recipeRoute.get('/publicRecipes', async (req, res, next) => {
+    console.log(req.userName);
+    let limit = 5;
+    let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
+    console.log(pageNumber);
+    const userId = req.params.userId;
+    const token = req.cookies.token;
+    console.log(token);
+    let currUserName = '';
+    if (token) {
+        jwt.verify(token, secretKey, function (err, decoded) {
+            if (!err) {
+                console.log(decoded);
+                currUserName = decoded.userName;
+            }
+        })
+    }
+    let whereClause = {
+        isPublic: true
+    };
+    if (currUserName.length !== 0) {
+        const user = await User.findOne({ //find the userId
+            where: {
+                userName: currUserName
+            }
+        });
+        whereClause = {
+            [Op.or]: [
+                { isPublic: true },
+                { userId: user.id }
+            ]
+        }
+    }
+
+    try {
+        const recipeObj = await Recipe.findAll({
+            limit: limit,
+            offset: (pageNumber - 1) * limit,
+            include: {
+                model: User,
+                attributes: ['firstName', 'lastName', 'userName']
+            },
+            include: [
+                {
+                    model: User,
+                    attributes: ['firstName', 'lastName']
+                },
+                {
+                    model: Ingredient,
+                    attributes: ['name'],
+                    through: { attributes: ['unit', 'quantity'] }
+                }
+            ],
+            where: whereClause,
+            attributes: ['title', 'cuisine', 'servings', 'instruction']
+        });
+        console.log(recipeObj);
+        if (recipeObj === null || recipeObj.length === 0) {
+            res.statusCode = 404;
+            let errObj = { Error: "There are no public recipes" };
+            res.json(errObj);
+        } else {
+            console.log(recipeObj);
+            res.statusCode = 200;
+            res.json(recipeObj);
+        }
+    }
+    catch (error) {
+        res.statusCode = 500;
+        let errObj = { error: `Internal Server Error ${error}` }
+        res.json(errObj);
+    }
+});
+
+
 recipeRoute.route("/:id")
     .all((req, res, next) => {
-        console.log('Recipe route with id as req params');
-        next();
+        let idNumber = parseInt(req.params.id);
+        if (req.params.id === undefined || isNaN(idNumber)) {
+            res.statusCode = 400;
+            let errObj = { "Error": "Bad request query parameter not passed" }
+            res.json(errObj);
+        } else {
+            next();
+        }
     })
 
     //query the recipe table and return the result along with the user details(firstname and lastname)
@@ -213,7 +360,12 @@ recipeRoute.route("/:id")
                         through: { attributes: ['unit', 'quantity'] }
                     }
                 ],
-                where: { id: recipeId },
+                where: {
+                    [Op.and]: [
+                        { id: recipeId },
+                        { isPublic: true }
+                    ]
+                },
                 attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction']
             });
             if (recipeObj === null) {
@@ -250,11 +402,24 @@ recipeRoute.route("/:id")
     //     else:
     //         return 404 error
 
-    .put(validate({ body: recipeSchema }),
+    .put(validate({ body: recipeSchema }), authenticate,
         async (req, res, next) => {
             let updateRequest = req.body;
             let recipeId = req.params.id;
-            let recipeDetail = await Recipe.findByPk(recipeId);
+            let currUser = req.userName;
+            const user = await User.findOne({ //find the userId
+                where: {
+                    userName: currUser
+                }
+            });
+            const recipeDetail = await Recipe.findOne({
+                where: {
+                    [Op.and]: [
+                        { id: recipeId },
+                        { userId: user.id }
+                    ]
+                },
+            });
             if (recipeDetail !== null) {
                 try {
                     await recipeDetail.update({
@@ -342,41 +507,65 @@ recipeRoute.route("/:id")
 
             } else {
                 res.statusCode = 404;
-                let errObj = { error: "Recipe with the given Recipe Id doesn't exist" };
+                let errObj = { "Error": "Recipe created by the user is not found" };
                 res.json(errObj);
             }
         })
 
-    // Find the entries in recipeIngredient table and delete all entries with the given id
-    // Delete the entry in the recipe table
+    // 1.Check if the current user is the same as the one created
+    // 2.Procedd to delete operation only when the recipe is created by current user
+    // 3.delete entries in recipeIngredient table with the given id
+    // 4.Delete the entry in the recipe table
     // to check if the entry in ingredient table to be deleted or not
 
-    .delete(async (req, res, next) => {
+    .delete(authenticate, async (req, res, next) => {
+        let currUserName = req.userName;
         let recipeId = req.params.id;
         console.log(recipeId);
         try {
-            await RecipeIngredient.destroy({
+            const user = await User.findOne({ //find the userId
                 where: {
-                    RecipeId: recipeId
+                    userName: currUserName
                 }
             });
-            await Recipe.destroy({
+            console.log(user.id);
+            const recipe = await Recipe.findOne({
                 where: {
-                    id: recipeId
-                }
+                    [Op.and]: [
+                        { id: recipeId },
+                        { userId: user.id }
+                    ]
+                },
             });
+            console.log(recipe);
+            if (recipe !== null) {
+                await RecipeIngredient.destroy({
+                    where: {
+                        RecipeId: recipeId
+                    }
+                });
+                await Recipe.destroy({
+                    where: {
+                        id: recipeId
+                    }
+                });
+                res.statusCode = 200;
+                res.json('DELETE');
+            } else {
+                res.statusCode = 400;
+                let errObj = { "Error": "Recipe - created by the user is not found" };
+                res.json(errObj);
+            }
+
         } catch (error) {
             console.log(error, 'Error')
-            await createRecipeIngredientModelTrans.rollback();
             res.statusCode = 500;
-            let errObj = { error: `Internal Server Error ${error}` }
+            let errObj = { "Error": `Internal Server Error ${error}` }
             res.json(errObj);
         }
-
-
-        res.statusCode = 200;
-        res.json('DELETE');
-
     })
+
+
+
 
 export default recipeRoute

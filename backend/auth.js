@@ -8,13 +8,18 @@ const authenticate = ((req, res, next) => {
     if (token) {
         jwt.verify(token, secretKey, function (err, decoded) {
             if (err) {
-                res.status(401).send('Unauthorized:Invalid Token');
+                res.status(401).json({ "Error": "Unauthorized-Invalid Token" });
             } else {
-                req.username = decoded.username;
+                console.log(decoded);
+                req.userName = decoded.userName;
                 next();
             }
         })
+    } else {
+        res.statsCode = 403;
+        res.json({ "Error": "You are not logged in yet, please login" });
     }
 })
+
 
 export default authenticate;

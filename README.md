@@ -91,24 +91,24 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
 # Users
 
-SignUp - POST  /users/login
-Login - POST /users/login
-Logout - DELETE /users/logout
+* SignUp - POST  /users/login
+* Login - POST /users/login
+* Logout - DELETE /users/logout
 
 # Recipes
 
-View Recipes - GET /recipes/?queryParams
-Add Recipe - POST /recipes
-View specific Recipe - GET /recipes/:recipeId
-Update a specific Recipe - UPDATE /recipes/:recipeId
-Delete a specifc Recipe - DELETE /recipes/:recipeId
+* View Recipes - GET /recipes/?queryParams
+* Add Recipe - POST /recipes
+* View specific Recipe - GET /recipes/:recipeId
+* Update a specific Recipe - UPDATE /recipes/:recipeId
+* Delete a specifc Recipe - DELETE /recipes/:recipeId
 
 # Ingredients
 
-View Ingredient - GET /ingredients/?queryParams
-View Specific Ingredient - GET /ingredients/:ingredientId
-Add Ingredient - POST /ingredients
-Update Specifc Ingredient - PUT /ingredient/:ingredientId
+* View Ingredient - GET /ingredients/?queryParams
+* View Specific Ingredient - GET /ingredients/:ingredientId
+* Add Ingredient - POST /ingredients
+* Update Specifc Ingredient - PUT /ingredient/:ingredientId
 
 # Steps to test and build the application
 

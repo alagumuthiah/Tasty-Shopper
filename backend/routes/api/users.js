@@ -59,7 +59,7 @@ userRoute.post('/signup', async function (req, res) {
         });
         const payload = { userName }; //claims to be used to create a JSON token
         const token = jwt.sign(payload, secretKey, {
-            expiresIn: '8h'
+            expiresIn: '1h'
         });
         res.cookie('token', token);
         res.statusCode = 200;
@@ -86,7 +86,7 @@ userRoute.post('/login', async function (req, res) {
         if (isMatch) {
             const payload = { userName }; //the claims defined when creating JSON token has to be passed as payload when verifying the token
             const token = jwt.sign(payload, secretKey, {
-                expiresIn: '8h'
+                expiresIn: '1h'
             });
             res.cookie('token', token, { httpOnly: true });
             res.statusCode = 200;
