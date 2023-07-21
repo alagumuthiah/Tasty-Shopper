@@ -1,37 +1,94 @@
 import React from 'react';
 import { useLocation, useParams } from 'react-router';
-import { TextField, Typography, Button, FormControl, Select, MenuItem, FormLabel, Radio, RadioGroup, FormControlLabel } from '@mui/material';
+import { TextField, Typography, Button, FormControl, Select, MenuItem, FormLabel, Radio, RadioGroup, FormControlLabel, Divider } from '@mui/material';
 import { units, cuisineOptions } from '../data/sampleSharedData';
 import { useSelector, useDispatch } from 'react-redux';
 import { listIngredients } from '../store/ingredients';
 import { fetchIngredients } from '../shared/fetchData';
+import { FieldArray, Formik, Form, getIn } from 'formik';
+import * as Yup from 'yup';
 
 //check how to handle File Upload and get the data
 //handle change and handlechangedata index - how to use the same fuction to handle changes
 //Does using separate delete buttons causes re render of the text areas for instructions
 //why useParams is called everytime when I change the input fields
 
-function FormComponent() {
-    const dispatch = useDispatch();;
-    const ingredientList = useSelector((state) => state.ingredients);
+let defaultValues;
 
-    const defaultValues = {
-        title: "",
-        servings: "",
-        cuisine: "",
-        instruction: [],
-        ingredients: [],
-        image: "",
-        isPublic: ""
+const validationSchema = Yup.object({
+    title: Yup.string()
+        .min(3, 'Title of the recipe has to be atleast 3 charcaters')
+        .max(40, 'Title cannot be more than 40 characters')
+        .required('Title is required for the recipe'),
+    servings: Yup.number()
+        .required('Serving is a required field'),
+    cuisine: Yup.mixed()
+        .required('Cuisine is required')
+        .oneOf(cuisineOptions, 'Invalid value for cuisine'),
+    isPublic: Yup.mixed()
+        .required('This field is required')
+        .oneOf(['Yes', 'No'], 'Has to be either Yes or No'),
+    instruction: Yup.array()
+        .of(Yup.string()),
+    ingredients: Yup.array().of(
+        Yup.object().shape({
+            name: Yup.string()
+                .required('Required'),
+            quantity: Yup.number().required('Required')
+        })
+    )
+});
+
+// function createRecipe(recipeData) {
+//     console.log('Create Recipe');
+//     console.log(recipeData);
+//     //Call the POST recipe API to create a Recipe
+// }
+
+// function updateRecipe(recipeData, recipeId) {
+//     console.log('Update Recipe');
+//     console.log(recipeData);
+//     console.log(recipeId);
+//call the PUT API to update the recipe with the given Recipe ID
+// }
+
+
+const FormComponent = () => {
+    const ingredientList = useSelector((state) => state.ingredients);
+    const dispatch = useDispatch();
+    const location = useLocation(); //to get the data passed from update component
+    console.log(location);
+
+    if (location.state !== null) {
+        const { updateRecipe } = location.state;
+        console.log(updateRecipe);
+        const ingredients = updateRecipe.Ingredients.map((ingredient) => {
+            return { "name": ingredient.name, "quantity": ingredient.RecipeIngredient.quantity, "unit": ingredient.RecipeIngredient.unit };
+        })
+        console.log(ingredients);
+        defaultValues = {
+            title: updateRecipe.title,
+            servings: updateRecipe.servings,
+            cuisine: updateRecipe.cuisine,
+            instruction: updateRecipe.instruction,
+            isPublic: updateRecipe.isPublic ? 'Yes' : 'No',
+            ingredients: ingredients
+        }
+    } else {
+        defaultValues = {
+            title: '',
+            servings: '',
+            cuisine: '',
+            instruction: [''],
+            isPublic: '',
+            ingredients: [
+                {
+                    name: '', quantity: '', unit: ''
+                }
+            ]
+        }
     }
 
-
-    const [recipeData, setRecipeData] = React.useState(defaultValues);
-
-    //to prevent rendering of the component n number of times, we need to use useEffect to update the form with the recipe Data when the form is rendered as a update component
-    const location = useLocation(); //to get the data passed from the component
-    const recipeParams = useParams();
-    console.log(location, recipeParams);
     React.useEffect(() => {
         const response = fetchIngredients('/ingredients');
         console.log(response);
@@ -45,230 +102,181 @@ function FormComponent() {
             })
     }, []);
 
-    React.useEffect(() => {
-        if (location.state != null) {
-            const { updateRecipe } = location.state;
-            console.log(updateRecipe);
-            const ingredients = updateRecipe.Ingredients.map((ingredient) => {
-                return { "name": ingredient.name, "quantity": ingredient.RecipeIngredient.quantity, "unit": ingredient.RecipeIngredient.unit };
-            })
-            setRecipeData((prevData) => ({ //check if there is a better way to update my recipeData state
-                ...prevData,
-                title: updateRecipe.title,
-                servings: updateRecipe.servings,
-                cuisine: updateRecipe.cuisine,
-                isPublic: updateRecipe.isPublic ? 'Yes' : 'No',
-                instruction: updateRecipe.instruction,
-                ingredients: ingredients
-            }))
-        }
-    }, [location.state])
-
-
-    function handleSubmit(event) {
-        event.preventDefault();
-        console.log('Handle Submit');
-        console.log(recipeData);
-        if (Object.keys(recipeParams).length !== 0) {
-            console.log('Update');
-            updateRecipe(recipeData, recipeParams.recipeId);
-        } else {
-            console.log('Create');
-            createRecipe(recipeData);
-        }
-        handleReset();
-    }
-
-    function createRecipe(recipeData) {
-        console.log('Create Recipe');
-        console.log(recipeData);
-        //Call the POST recipe API to create a Recipe
-    }
-
-    function updateRecipe(recipeData, recipeId) {
-        console.log('Update Recipe');
-        console.log(recipeData);
-        console.log(recipeId);
-        //call the PUT API to update the recipe with the given Recipe ID
-    }
-    function handleChange(event) {
-        setRecipeData((prevData) => ({
-            ...prevData,
-            [event.target.name]: event.target.value
-        })
-        )
-    }
-
-    function handleReset() {
-        setRecipeData(defaultValues);
-    }
-
-    function handleChangeWithIndex(event, index) {
-        const inst = recipeData[event.target.name];
-        inst[index] = event.target.value;
-        setRecipeData((prevData) => ({
-            ...prevData,
-            [event.target.name]: inst
-        })
-        )
-    }
-
-    function handleAddWithIndex(event) {
-        const dataToBeAdded = (event.target.name === "ingredients") ? { name: '', quantity: '', unit: '' } : "";
-        setRecipeData((prevData) => ({
-            ...prevData,
-            [event.target.name]: [...recipeData[event.target.name], dataToBeAdded]
-        }));
-    }
-
-    function handleDeleteWithIndex(event, index) {
-        const array = recipeData[event.target.name];
-        array.splice(index, 1);
-        setRecipeData((prevData) => ({
-            ...prevData,
-            [event.target.name]: array
-        }))
-    }
-
-    function handleChangeIngredients(event, index) {
-        const inst = recipeData.ingredients;
-        inst[index][event.target.name] = event.target.value;
-        setRecipeData((prevData) => ({
-            ...prevData,
-            ingredients: inst
-        })
-        )
-
-    }
-
     return (
-        <form className="form-section" onSubmit={handleSubmit}>
-            <Typography>{location.state ? `Update Recipe` : `Create Recipe`}</Typography>
-            <div className="spaced-element">
-                <TextField
-                    id="title"
-                    name="title"
-                    type="text"
-                    onChange={handleChange}
-                    label="Title"
-                    value={recipeData.title} />
-            </div>
-            <div className="spaced-element">
-                <TextField
-                    id="servings"
-                    name="servings"
-                    type="number"
-                    onChange={handleChange}
-                    label="Servings"
-                    value={recipeData.servings} />
-            </div>
-            <div className="spaced-element">
-                <FormControl>
-                    <Select
-                        id="cuisine"
-                        name="cuisine"
-                        onChange={handleChange}
-                        label="Cuisine"
-                        value={recipeData.cuisine}
-                    >
-                        {cuisineOptions.map((cuisine, index) => {
-                            return (
-                                <MenuItem key={index} value={cuisine}>{cuisine}</MenuItem>
-                            )
-                        })}
-                    </Select>
-                </FormControl>
-            </div>
-            <div className="spaced-element">
-                <FormControl>
-                    <FormLabel>Do you want to make it public?</FormLabel>
-                    <RadioGroup name="isPublic" value={recipeData.isPublic} onChange={handleChange}>
-                        <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
-                        <FormControlLabel value="No"
-                            control={<Radio />} label="No" />
-                    </RadioGroup>
-                </FormControl>
-            </div>
-            <div className="spaced-element">
-                <FormLabel>Upload Image of your Recipe</FormLabel>
-                <TextField
-                    id="image"
-                    name="image"
-                    type="file"
-                    onChange={handleChange}
-                    value={recipeData.image} />
-            </div>
-            <div className="spaced-element">
-                <FormLabel>Instructions</FormLabel>
-                {recipeData.instruction.map((instruction, index) => {
-                    return (
-                        <div key={index} style={{ padding: "10px" }}>
+        <div>
+            <Formik
+                initialValues={defaultValues}
+                validationSchema={validationSchema}
+                onSubmit={values => {
+                    alert(JSON.stringify(values, null, 2));
+                }}
+            >
+                {({ values, touched, errors, handleChange, handleBlur }) => (
+                    <Form noValidate>
+                        <div className="spaced-element">
                             <TextField
-                                name="instruction"
+                                name="title"
                                 type="text"
-                                value={instruction}
-                                multiline
-                                minRows={4}
-                                maxRows={8}
-                                onChange={event => handleChangeWithIndex(event, index)}
+                                onChange={handleChange}
+                                label="Title"
+                                value={values.title}
+                                error={touched.title && Boolean(errors.title)}
+                                helperText={touched.title && errors.title}
                             />
-                            <Button name="instruction" variant="contained" onClick={event => handleDeleteWithIndex(event, index)}>Delete</Button>
                         </div>
-                    )
-                })}
-                <Button name="instruction" variant="contained" onClick={handleAddWithIndex}>Add</Button>
-
-            </div>
-            <div className="spaced-element">
-                <FormLabel>Ingredients</FormLabel>
-                {recipeData.ingredients.map((ingredient, index) => {
-                    return (
-                        <div key={index} style={{ padding: "10px" }}>
-                            <Select
-                                name="name"
-                                onChange={event => handleChangeIngredients(event, index)}
-                                label="Name"
-                                value={ingredient.name}
-                            >
-                                {ingredientList.map((item, index) => {
-                                    return (
-                                        <MenuItem key={index} value={item.name}>{item.name}</MenuItem>
-                                    )
-                                })}
-                            </Select>
+                        <div className="spaced-element">
                             <TextField
-                                name="quantity"
-                                type="number" step="0.0001" //check what this step is for?
-                                onChange={event => handleChangeIngredients(event, index)}
-                                label="Quantity"
-                                value={ingredient.quantity}
-                            />
-
-                            <Select
-                                name="unit"
-                                onChange={event => handleChangeIngredients(event, index)}
-                                label="Unit"
-                                value={ingredient.unit}
-                            >
-                                {units.map((unit, index) => {
-                                    return (
-                                        <MenuItem key={index} value={unit}>{unit}</MenuItem>
-                                    )
-                                })}
-                            </Select>
-
-                            <Button name="ingredients" variant="contained" onClick={event => handleDeleteWithIndex(event, index)}>Delete</Button>
+                                id="servings"
+                                name="servings"
+                                type="number"
+                                onChange={handleChange}
+                                label="Servings"
+                                value={values.servings}
+                                error={touched.servings && Boolean(errors.servings)}
+                                helperText={touched.servings && errors.servings} />
                         </div>
-                    )
-                })}
-                <Button name="ingredients" variant="contained" onClick={handleAddWithIndex}>Add</Button>
+                        <div className="spaced-element">
+                            <FormControl>
+                                <Select
+                                    id="cuisine"
+                                    name="cuisine"
+                                    onChange={handleChange}
+                                    label="Cuisine"
+                                    value={values.cuisine}
+                                    error={touched.cuisine && Boolean(errors.cuisine)}
+                                    helperText={touched.cuisine && errors.cuisine}
+                                >
+                                    {cuisineOptions.map((cuisine, index) => {
+                                        return (
+                                            <MenuItem key={index} value={cuisine}>{cuisine}</MenuItem>
+                                        )
+                                    })}
+                                </Select>
+                            </FormControl>
+                        </div>
+                        <div className="spaced-element">
 
-            </div>
-            <div>
-                <Button variant="contained" type="submit">{location.state ? `UPDATE` : `CREATE`}</Button>
-            </div>
-        </form>
-    )
-}
+                            <FormLabel>Do you want to make it public?</FormLabel>
+                            <RadioGroup name="isPublic" value={values.isPublic} onChange={handleChange} error={touched.isPublic && Boolean(errors.isPublic)}
+                                helperText={touched.isPublic && errors.isPublic}>
+                                <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
+                                <FormControlLabel value="No"
+                                    control={<Radio />} label="No" />
+                            </RadioGroup>
+
+                        </div>
+                        <FieldArray name="instruction">
+                            {({ push, remove }) => (
+                                <div>
+                                    {values.instruction.map((ins, index) => {
+                                        const instr = `instruction[${index}]`;
+                                        const touchedInstruction = getIn(touched, instr);
+                                        const errorInstruction = getIn(errors, instr);
+                                        return (
+                                            <div className="spaced-element" key={index}>
+                                                <TextField
+                                                    label="Instruction"
+                                                    name={instr}
+                                                    value={ins}
+                                                    helperText={
+                                                        touchedInstruction && errorInstruction
+                                                            ? errorInstruction
+                                                            : ""
+                                                    }
+                                                    error={Boolean(touchedInstruction && errorInstruction)}
+                                                    onChange={handleChange}
+                                                />
+                                                <Button type="button" variant="contained" onClick={() => remove(index)}>Delete</Button>
+                                            </div>
+                                        )
+                                    }
+                                    )}
+                                    <Button type="button" variant="contained" onClick={() => push('')
+                                    }
+                                    >
+                                        Add</Button>
+                                </div>
+                            )}
+                        </FieldArray>
+                        <FieldArray name="ingredients">
+                            {({ push, remove }) => (
+                                <div>
+                                    {values.ingredients.map((ingredient, index) => {
+                                        const name = `ingredients[${index}].name`;
+                                        const touchedName = getIn(touched, name);
+                                        const errorName = getIn(errors, name);
+                                        const quantity = `ingredients[${index}].quantity`;
+                                        const touchedQuantity = getIn(touched, quantity);
+                                        const errorQuantity = getIn(errors, quantity);
+                                        const unit = `ingredients[${index}].unit`;
+                                        const touchedUnit = getIn(touched, unit);
+                                        const errorUnit = getIn(errors, unit);
+                                        return (
+                                            <div className="spaced-element" key={index}>
+                                                <Select
+                                                    name={name}
+                                                    label="Name"
+                                                    value={ingredient.name}
+                                                    error={Boolean(touchedName && errorName)}
+                                                    onChange={handleChange}
+                                                >
+                                                    {ingredientList.map((item, index) => {
+                                                        return (
+                                                            <MenuItem key={index} value={item.name}>{item.name}</MenuItem>
+                                                        )
+                                                    })}
+                                                </Select>
+                                                <TextField
+                                                    label="Quantity"
+                                                    name={quantity}
+                                                    value={ingredient.quantity}
+                                                    helperText={
+                                                        touchedQuantity && errorQuantity
+                                                            ? errorQuantity
+                                                            : ""
+                                                    }
+                                                    type="number"
+                                                    error={Boolean(touchedQuantity && errorQuantity)}
+                                                    onChange={handleChange}
+                                                />
+
+                                                <Select
+                                                    name={unit}
+                                                    label="Unit"
+                                                    value={ingredient.unit}
+                                                    error={Boolean(touchedUnit && errorUnit)}
+                                                    onChange={handleChange}
+                                                >
+                                                    {units.map((unit, index) => {
+                                                        return (
+                                                            <MenuItem key={index} value={unit}>{unit}</MenuItem>
+                                                        )
+                                                    })}
+                                                </Select>
+
+                                                <Button type="button" variant="contained" onClick={() => remove(index)}>Delete</Button>
+                                            </div>
+                                        );
+                                    }
+                                    )}
+
+                                    <Button type="button" variant="contained" onClick={() => push({ name: '', quantity: '', unit: '' })
+                                    }
+                                    >
+                                        Add</Button>
+
+                                </div>
+                            )}
+                        </FieldArray>
+                        <Divider style={{ marginTop: 20, marginBottom: 20 }} />
+                        <div>
+                            <Button variant="contained" type="submit">{location.state ? `UPDATE` : `CREATE`}</Button>
+                        </div>
+                    </Form>
+                )}
+            </Formik>
+        </div >
+    );
+};
 
 export default FormComponent;

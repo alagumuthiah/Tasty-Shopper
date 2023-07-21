@@ -256,7 +256,20 @@ const recipes =
                 "userName": "kanithiru",
                 "id": 9
             },
-            "Ingredients": []
+            "Ingredients": [{
+                "name": "Paneer",
+                "RecipeIngredient": {
+                    "unit": "grams",
+                    "quantity": 300
+                }
+            },
+            {
+                "name": "Onion",
+                "RecipeIngredient": {
+                    "unit": "grams",
+                    "quantity": 50
+                }
+            }]
         },
         {
             "title": "Paneer Burji",
