@@ -3,7 +3,9 @@ import { baseUrl } from './baseUrl';
 
 //how to handle the API key for user defined APIs
 
-export async function fetchRecipes(url, searchText) {
+//axios.defaults.withCredentials = true
+
+export async function fetchOtherRecipes(url, searchText) {
     const response = await axios({
         method: 'get',
         url: `${url}?query=${searchText}`,
@@ -22,9 +24,9 @@ export async function fetchUser(uri, payload) {
             url: `${baseUrl}${uri}`,
             data: payload
         })
-        console.log(response);
+        console.log(response.headers);
 
-        return response.data;
+        return response;
     }
     catch (err) {
         console.log(err);
@@ -37,10 +39,32 @@ export async function fetchIngredients(uri) {
         const response = await axios({
             method: 'get',
             url: `${baseUrl}${uri}`,
+
         })
         console.log(response);
 
         return response.data;
+    }
+    catch (err) {
+        console.log(err);
+        return err.response.data;
+    }
+}
+
+export async function fetchRecipes(uri) {
+    let token = sessionStorage.getItem('access-token');
+    console.log(`${baseUrl}${uri}`);
+    console.log(token);
+    try {
+        const response = await axios({
+            method: 'get',
+            headers: { 'access-token': token },
+            url: `${baseUrl}${uri}`
+        })
+        console.log('Recipes');
+        console.log(response);
+
+        return response;
     }
     catch (err) {
         console.log(err);

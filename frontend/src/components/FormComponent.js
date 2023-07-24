@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation, useParams } from 'react-router';
+import { useLocation } from 'react-router';
 import { TextField, Typography, Button, FormControl, Select, MenuItem, FormLabel, Radio, RadioGroup, FormControlLabel, Divider } from '@mui/material';
 import { units, cuisineOptions } from '../data/sampleSharedData';
 import { useSelector, useDispatch } from 'react-redux';
@@ -112,7 +112,10 @@ const FormComponent = () => {
                 }}
             >
                 {({ values, touched, errors, handleChange, handleBlur }) => (
-                    <Form noValidate>
+                    <Form className="form-section" noValidate>
+                        <div className='spaced-element'>
+                            <Typography>{location.state ? 'Update Recipe' : 'Create Recipe'}</Typography>
+                        </div>
                         <div className="spaced-element">
                             <TextField
                                 name="title"

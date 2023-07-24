@@ -41,10 +41,14 @@ function LoginComponent() {
             response
                 .then((userData) => {
                     console.log(userData);
-                    if (userData.hasOwnProperty("userName")) {
+                    console.log(userData.data);
+                    console.log();
+                    if (userData.data.hasOwnProperty("userName")) {
                         console.log(userData);
+                        let token = userData.headers['access-token'];
+                        sessionStorage.setItem('access-token', token);
                         alert('Login successful');
-                        dispatch(login(userData));
+                        dispatch(login(userData.data));
                     } else {
                         alert(` Error: ${userData.Error}`);
                     }
@@ -62,9 +66,9 @@ function LoginComponent() {
     //Use useEffect to send the data to the database and authenticate the user
     //Check for the Error, it shows login successful when I submit an empty form
     return (
-        <form class="form-section" onSubmit={formik.handleSubmit}>
+        <form className="form-section" onSubmit={formik.handleSubmit}>
             <Typography>Login to view custom recipes</Typography>
-            <div class="spaced-element">
+            <div className="spaced-element">
                 <TextField
                     id="userName"
                     name="userName"
@@ -76,7 +80,7 @@ function LoginComponent() {
                     helperText={formik.touched.userName && formik.errors.userName}
                 />
             </div>
-            <div class="spaced-element">
+            <div className="spaced-element">
                 <TextField
                     id="password"
                     name="password"
@@ -88,10 +92,10 @@ function LoginComponent() {
                     helperText={formik.touched.password && formik.errors.password} />
 
             </div>
-            <div class="spaced-element">
+            <div className="spaced-element">
                 <ButtonComponent text="Login" />
             </div>
-            <div class="spaced-element">
+            <div className="spaced-element">
                 <Typography>Don't have an account? <Link to="/signup">Sign Up</Link></Typography>
             </div>
         </form>

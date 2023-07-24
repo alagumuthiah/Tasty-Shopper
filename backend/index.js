@@ -6,10 +6,16 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { ValidationError } from 'express-json-validator-middleware';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const app = express();
+
+const corsOption = {
+    'exposedHeaders': 'access-token'
+};
+
 app.use(cookieParser());
-app.use(cors());
+app.use(cors(corsOption));
 app.use(bodyParser.json());
 app.use('/recipes', recipeRoute);
 app.use('/ingredients', ingredientRoute);
@@ -22,6 +28,7 @@ app.use((error, req, res, next) => {
         res.status(400);
         res.send(error.validationErrors);
     } else {
+        console.log(error);
         console.log('Else');
     }
 })

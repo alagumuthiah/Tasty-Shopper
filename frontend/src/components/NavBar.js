@@ -2,6 +2,8 @@ import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/session';
+import { resetMyRecipes } from "../store/myRecipes";
+import { resetPublicRecipes } from "../store/publicRecipes";
 
 function NavBar() {
     const dispatch = useDispatch();
@@ -9,6 +11,12 @@ function NavBar() {
 
     console.log(userAuthentication);
 
+    const handleLogOut = () => {
+        sessionStorage.removeItem('access-token');
+        dispatch(resetMyRecipes());
+        dispatch(resetPublicRecipes());
+        dispatch(logout());
+    }
     return (
         <div className="nav--bar">
             <AppBar position="static" sx={{ bgcolor: "#5ab1bb" }}>
@@ -32,7 +40,7 @@ function NavBar() {
                     </div>
 
                     {userAuthentication?.isLogged ?
-                        <Button size="medium" color="primary" variant="contained" onClick={() => dispatch(logout())} >Logout</Button>
+                        <Button size="medium" color="primary" variant="contained" onClick={handleLogOut} >Logout</Button>
                         :
                         <Link to="/login">
                             <Button size="medium" color="primary" variant="contained">Login</Button>

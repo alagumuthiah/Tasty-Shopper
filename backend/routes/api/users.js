@@ -3,10 +3,53 @@ import jwt from 'jsonwebtoken';
 import authenticate from '../../auth';
 import { User } from '../../db/models';
 import bcrypt from 'bcrypt';
+import { Validator } from 'express-json-validator-middleware';
 import { secretKey, saltRounds } from '../../secret';
 
 const userRoute = express.Router();
+const { validate } = new Validator();
 
+const userSignUpSchema = {
+    type: 'object',
+    required: ['userName', 'firstName', 'lastName', 'email', 'password'],
+    properties: {
+        userName: {
+            type: 'string',
+            minLength: 3
+        },
+        firstName: {
+            type: 'string',
+            minLength: 3
+        },
+        lastName: {
+            type: 'string',
+            minLength: 3
+        },
+        email: {
+            type: 'string',
+            minLength: 3
+        },
+        password: {
+            type: 'string',
+            minLength: 3
+        }
+    }
+};
+
+const userLoginSchema = {
+    type: 'object',
+    required: ['userName', 'password'],
+    properties: {
+        userName: {
+            type: 'string',
+            minLength: 3
+        },
+        password: {
+            type: 'string',
+            minLength: 3
+        }
+    }
+};
 
 //Given the userId - it returns the user details
 userRoute.get('/:id', async function (req, res) {
@@ -41,7 +84,7 @@ userRoute.get('/:id', async function (req, res) {
 
 //Check how the hashed password can be removed from the object in login and signup methods
 
-userRoute.post('/signup', async function (req, res) {
+userRoute.post('/signup', validate({ body: userSignUpSchema }), async function (req, res) {
     const { userName, firstName, lastName, email, password } = req.body;
     console.log(userName, firstName, lastName, email, password);
     const currUser = await User.findOne({ where: { userName: userName }, attributes: ['userName', 'firstName', 'lastName', 'hashedPassword'] });
@@ -61,14 +104,22 @@ userRoute.post('/signup', async function (req, res) {
         const token = jwt.sign(payload, secretKey, {
             expiresIn: '1h'
         });
-        res.cookie('token', token);
+
+        //res.cookie('token', token);
         res.statusCode = 200;
-        res.json(newUser);
+        res.setHeader("access-token", token);
+        let resObj = {
+            "userName": newUser.userName,
+            "firstName": newUser.firstName,
+            "lastName": newUser.lastName,
+            "email": newUser.email,
+        }
+        res.json(resObj);
     }
 
 });
 
-userRoute.post('/login', async function (req, res) {
+userRoute.post('/login', validate({ body: userLoginSchema }), async function (req, res) {
     const { userName, password } = req.body;
     console.log(userName, password);
     const currUser = await User.findOne({
@@ -86,7 +137,8 @@ userRoute.post('/login', async function (req, res) {
             const token = jwt.sign(payload, secretKey, {
                 expiresIn: '1h'
             });
-            res.cookie('token', token, { httpOnly: true });
+            // res.cookie('token', token, { httpOnly: true });
+            res.setHeader("access-token", token);
             res.statusCode = 200;
             res.json(currUser);
         } else {

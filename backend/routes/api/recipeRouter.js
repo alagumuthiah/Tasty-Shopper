@@ -197,8 +197,11 @@ recipeRoute.route("/")
     })
 
 recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
+    console.log('Inside my Recipes');
     let currUserName = req.userName;
+    console.log('User name');
     console.log(currUserName);
+
     let limit = 5;
     let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
     try {
@@ -207,38 +210,45 @@ recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
                 userName: currUserName
             }
         });
+        console.log('id');
         console.log(user.id);
-        const recipeObj = await Recipe.findAll({
-            limit: limit,
-            offset: (pageNumber - 1) * limit,
-            include: {
-                model: User,
-                attributes: ['firstName', 'lastName', 'userName']
-            },
-            include: [
-                {
+        if (user !== null) {
+            const recipeObj = await Recipe.findAll({
+                limit: limit,
+                offset: (pageNumber - 1) * limit,
+                include: {
                     model: User,
-                    attributes: ['firstName', 'lastName']
+                    attributes: ['firstName', 'lastName', 'userName']
                 },
-                {
-                    model: Ingredient,
-                    attributes: ['name'],
-                    through: { attributes: ['unit', 'quantity'] }
-                }
-            ],
-            where: { userId: user.id },
-            attributes: ['title', 'cuisine', 'servings', 'instruction']
+                include: [
+                    {
+                        model: User,
+                        attributes: ['firstName', 'lastName', 'userName']
+                    },
+                    {
+                        model: Ingredient,
+                        attributes: ['name'],
+                        through: { attributes: ['unit', 'quantity'] }
+                    }
+                ],
+                where: { userId: user.id },
+                attributes: ['title', 'cuisine', 'servings', 'instruction']
 
-        });
-        if (recipeObj === null || recipeObj.length === 0) {
-            res.statusCode = 404;
-            let errObj = { "Error": "You have no recipes created" };
-            res.json(errObj);
+            });
+            if (recipeObj === null || recipeObj.length === 0) {
+                res.statusCode = 404;
+                let errObj = { "Error": "You have no recipes created" };
+                res.json(errObj);
+            } else {
+                console.log(recipeObj);
+                res.statusCode = 200;
+                res.json(recipeObj);
+            }
         } else {
-            console.log(recipeObj);
-            res.statusCode = 200;
-            res.json(recipeObj);
+            console.log(user);
+            res.json({ "Error": "Please login to view Recipes" });
         }
+
     }
     catch (error) {
         res.statusCode = 500;
@@ -254,11 +264,10 @@ recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
 //     Modify the where clause by including only the recipes that are public
 recipeRoute.get('/publicRecipes', async (req, res, next) => {
     console.log(req.userName);
-    let limit = 5;
+    let limit = 10;
     let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
     console.log(pageNumber);
-    const userId = req.params.userId;
-    const token = req.cookies.token;
+    const token = req.headers['access-token'];
     console.log(token);
     let currUserName = '';
     if (token) {

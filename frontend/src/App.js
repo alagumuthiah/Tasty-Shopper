@@ -9,6 +9,7 @@ import LoginComponent from './components/LoginComponent';
 import SignUpComponent from './components/SignUpComponent';
 import FormComponent from './components/FormComponent';
 import ShoppingList from './components/ShoppingList';
+import HomeComponent from './components/HomeComponent';
 
 function App() {
   return (
@@ -18,7 +19,8 @@ function App() {
         <NavBar />
       </header>
       <Routes>
-        <Route path="/" element={<MyRecipes />} />
+        <Route path="/" element={<HomeComponent />} />
+        <Route path="/home" element={<HomeComponent />} />
         <Route path="/about" element={<AboutComponent />} />
         <Route path="/myrecipes" element={<MyRecipes />} />
         <Route path="/otherrecipes" element={<OtherRecipes />} />

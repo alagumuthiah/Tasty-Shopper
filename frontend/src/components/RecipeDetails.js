@@ -66,6 +66,7 @@ function RecipeDetails() {
                 <Link to={`/update/recipe/${selectedRecipe.id}`} state={{ updateRecipe: selectedRecipe }} style={{ textDecoration: 'none' }}>
                     <Button variant="contained" type="submit">UPDATE</Button>
                 </Link>
+
             }
             <Button variant="contained" color="secondary"
                 onClick={handleShoppingList}>Add to ShoppingList</Button>

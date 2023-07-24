@@ -2,9 +2,12 @@ import jwt from 'jsonwebtoken';
 import { secretKey } from './secret';
 
 const authenticate = ((req, res, next) => {
-    console.log(req.cookies);
-    const token = req.cookies.token;
-    console.log(token);
+    console.log('Authenticate');
+    //console.log(req);
+    const token = req.headers['access-token'];
+    console.log('TOKEN');
+    console.log(JSON.stringify(req.headers));
+    console.log(req.headers['access-token']);
     if (token) {
         jwt.verify(token, secretKey, function (err, decoded) {
             if (err) {

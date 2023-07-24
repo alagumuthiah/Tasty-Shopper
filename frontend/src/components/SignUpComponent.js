@@ -56,9 +56,12 @@ function SignUpComponent() {
             console.log(response); //error handling needs to be implemented
             response
                 .then((userData) => {
-                    if (userData.hasOwnProperty("userName")) {
+                    if (userData.data.hasOwnProperty("userName")) {
                         alert('Sign up successful');
-                        dispatch(login(userData));
+                        let token = userData.headers['access-token'];
+                        sessionStorage.setItem('access-token', token);
+                        alert('Signup successful');
+                        dispatch(login(userData.data));
                     } else {
                         alert(` Error: ${userData.Error}`);
                     }
