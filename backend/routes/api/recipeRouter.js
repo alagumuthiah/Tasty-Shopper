@@ -232,7 +232,7 @@ recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
                     }
                 ],
                 where: { userId: user.id },
-                attributes: ['title', 'cuisine', 'servings', 'instruction']
+                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
 
             });
             if (recipeObj === null || recipeObj.length === 0) {
@@ -315,7 +315,7 @@ recipeRoute.get('/publicRecipes', async (req, res, next) => {
                 }
             ],
             where: whereClause,
-            attributes: ['title', 'cuisine', 'servings', 'instruction']
+            attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
         });
         console.log(recipeObj);
         if (recipeObj === null || recipeObj.length === 0) {

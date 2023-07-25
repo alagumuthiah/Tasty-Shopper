@@ -6,7 +6,6 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { ValidationError } from 'express-json-validator-middleware';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const app = express();
 

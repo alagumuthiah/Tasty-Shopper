@@ -17,7 +17,7 @@ function MyRecipes() {
     const [searchText, setSearchText] = React.useState('');
     const uri = '/recipes/myRecipes';
     //need to check when to invoke the API, when the search text gets modified or invoke the API and store the result - then just filter the data when search text changes (this minimize the number of API calls but data might not be accurate because when user include a new entry that will not be displayed)
-
+    //look ahead - for recipe names
     React.useEffect(() => {
         if (searchText.length > 0) {
             const response = fetchRecipes(uri, searchText);

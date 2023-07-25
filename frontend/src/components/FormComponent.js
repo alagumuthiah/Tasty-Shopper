@@ -7,6 +7,7 @@ import { listIngredients } from '../store/ingredients';
 import { fetchIngredients } from '../shared/fetchData';
 import { FieldArray, Formik, Form, getIn } from 'formik';
 import * as Yup from 'yup';
+import { updateRecipe, createRecipe } from '../shared/modifyData';
 
 //check how to handle File Upload and get the data
 //handle change and handlechangedata index - how to use the same fuction to handle changes
@@ -101,6 +102,17 @@ const FormComponent = () => {
                 console.log('Error', error);
             })
     }, []);
+
+    const handleButtonClick = (event) => {
+        // console.log('Button clicked');
+        // if (location.state !== null) {
+        //     let uri = `/recipes/${updateRecipe.id}`;
+        //     updateRecipe(uri);
+        // } else {
+        //     let uri = `/recipes/`
+        //     createRecipe(uri);
+        // }
+    }
 
     return (
         <div>
@@ -273,7 +285,7 @@ const FormComponent = () => {
                         </FieldArray>
                         <Divider style={{ marginTop: 20, marginBottom: 20 }} />
                         <div>
-                            <Button variant="contained" type="submit">{location.state ? `UPDATE` : `CREATE`}</Button>
+                            <Button variant="contained" type="submit" onClick={handleButtonClick}>{location.state ? `UPDATE` : `CREATE`}</Button>
                         </div>
                     </Form>
                 )}

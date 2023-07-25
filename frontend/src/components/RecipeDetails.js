@@ -1,6 +1,7 @@
 import { useLocation, Link } from "react-router-dom";
 import { Button } from '@mui/material';
 import { useSelector } from 'react-redux';
+import { deleteRecipe } from "../shared/modifyData";
 
 function RecipeDetails() {
     const userInfo = useSelector((state) => state.userInfo);
@@ -36,6 +37,18 @@ function RecipeDetails() {
         localStorage.setItem("shoppingList", JSON.stringify(list));
     }
 
+    function handleDelete(event) {
+        const res = window.confirm("Are you sure you want to delete this recipe?");
+        if (res) {
+            console.log(selectedRecipe);
+            let uri = `/recipes/${selectedRecipe.id}`;
+            console.log('Deleted');
+            deleteRecipe(uri);
+        } else {
+            console.log('Not deleted');
+        }
+    }
+
     return (
 
         <div>
@@ -66,7 +79,9 @@ function RecipeDetails() {
                 <Link to={`/update/recipe/${selectedRecipe.id}`} state={{ updateRecipe: selectedRecipe }} style={{ textDecoration: 'none' }}>
                     <Button variant="contained" type="submit">UPDATE</Button>
                 </Link>
-
+            }
+            {currUser &&
+                <Button variant="contained" type="submit" onClick={handleDelete}>DELETE</Button>
             }
             <Button variant="contained" color="secondary"
                 onClick={handleShoppingList}>Add to ShoppingList</Button>
