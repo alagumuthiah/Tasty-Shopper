@@ -1,54 +1,65 @@
 import React from 'react';
 import RecipeCard from "./RecipeCard";
+import PaginationComponent from './PaginationComponent';
 import { Typography, TextField } from "@mui/material";
 import { fetchRecipes } from '../shared/fetchData';
 import { useSelector, useDispatch } from 'react-redux';
-import { searchPublicRecipes, resetPublicRecipes } from '../store/publicRecipes';
+import { fetchPublicRecipes, resetPublicRecipes } from '../store/publicRecipes';
 
 function HomeComponent() {
     const userAuthentication = useSelector((state) => state.userInfo);
-    const publicRecipesData = useSelector((state) => state.publicRecipes);
+    const pageNumber = useSelector((state) => state.publicRecipes.pageNumber);
+    const publicRecipesData = useSelector((state) => state.publicRecipes.data);
     const dispatch = useDispatch();
     const [searchText, setSearchText] = React.useState('');
+    const [filteredRecipe, setFilteredRecipe] = React.useState([]);
+
+
+    const uri = '/recipes/publicRecipes';
+    React.useEffect(() => {
+        console.log('API call');
+        const response = fetchRecipes(uri, pageNumber);
+        console.log(response);
+        response
+            .then(recipeData => {
+                console.log(recipeData);
+                if (recipeData.hasOwnProperty('Error')) {
+                    dispatch(resetPublicRecipes());
+                } else {
+                    dispatch(fetchPublicRecipes(recipeData.data));
+                    setFilteredRecipe(recipeData.data);
+                }
+
+            })
+            .catch((error) => {
+                console.log(`New Error:${error}`);
+            })
+
+    }, [pageNumber])
+
+    React.useEffect(() => {
+        console.log('Filter');
+        if (searchText.length > 0) {
+            const filteredList = publicRecipesData.filter((recipe) => {
+                return recipe['title'].toLowerCase().includes(searchText.toLowerCase());
+            });
+            setFilteredRecipe(filteredList);
+        } else {
+            setFilteredRecipe([]);
+        }
+        sessionStorage.setItem('searchText', JSON.stringify(searchText));
+
+    }, [searchText])
+
+    const recipeCards = filteredRecipe.map((recipe) => {
+        return (
+            <RecipeCard recipe={recipe} />
+        )
+    });
 
     const handleChange = (event) => {
         setSearchText(event.target.value);
     };
-    const uri = '/recipes/publicRecipes';
-    React.useEffect(() => {
-        if (searchText.length > 0) {
-            const response = fetchRecipes(uri, searchText);
-            console.log(response);
-            response
-                .then(recipeData => {
-                    console.log(recipeData);
-                    if (recipeData.data.hasOwnProperty('Error')) {
-                        dispatch(resetPublicRecipes());
-                    } else {
-                        const myRecipeList = recipeData.data.filter((recipe) => {
-                            return recipe['title'].toLowerCase().includes(searchText.toLowerCase());
-                        });
-                        dispatch(searchPublicRecipes(myRecipeList));
-                        console.log(publicRecipesData);
-                    }
-
-                })
-                .catch((error) => {
-                    console.log(`New Error:${error}`);
-                })
-        } else {
-            dispatch(resetPublicRecipes());
-        }
-        sessionStorage.setItem('searchText', JSON.stringify(searchText));
-
-
-    }, [searchText])
-
-    const recipeCards = publicRecipesData.map((recipe) => {
-        return (
-            <RecipeCard recipe={recipe} />
-        )
-    })
 
     return (
         <div>
@@ -79,6 +90,7 @@ function HomeComponent() {
                 {publicRecipesData.length !== 0 ? recipeCards : 'No recipes to display'}
                 {/* {recipeCards} */}
             </div>
+            {filteredRecipe.length !== 0 && <PaginationComponent />}
         </div>
     );
 }

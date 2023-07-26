@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 
 export default function RecipeCard(props) {
   console.log(props);
+  console.log('inside recipe card');
+  //it is called twice - CHECK!!!
   const imgUrl = "https://source.unsplash.com/EzH46XCDQRY";
   return (
     <Link to={`/recipe/details`} state={{ selectedRecipe: props.recipe }} style={{ textDecoration: 'none' }}>

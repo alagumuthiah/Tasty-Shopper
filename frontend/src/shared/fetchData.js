@@ -51,16 +51,17 @@ export async function fetchIngredients(uri) {
     }
 }
 
-export async function fetchRecipes(uri) {
+export async function fetchRecipes(uri, pageNumber) {
     let token = sessionStorage.getItem('access-token');
-    console.log(`${baseUrl}${uri}`);
+    console.log(pageNumber);
+    console.log(`${baseUrl}${uri}/?page=${pageNumber}`);
     console.log(token);
     try {
         const response = await axios({
             method: 'get',
             headers: { 'access-token': token },
-            url: `${baseUrl}${uri}`
-        })
+            url: `${baseUrl}${uri}/?page=${pageNumber}`
+        });
         console.log('Recipes');
         console.log(response);
 

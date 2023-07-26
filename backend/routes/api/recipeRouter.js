@@ -202,7 +202,7 @@ recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
     console.log('User name');
     console.log(currUserName);
 
-    let limit = 5;
+    let limit = 1;
     let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
     try {
         const user = await User.findOne({

@@ -1,53 +1,68 @@
 import RecipeCard from "./RecipeCard";
 import { Link } from 'react-router-dom';
+import PaginationComponent from './PaginationComponent';
 import { Typography, TextField } from "@mui/material";
 import React from "react";
 import { fetchRecipes } from '../shared/fetchData';
 import Button from "@mui/material/Button";
-import { searchMyRecipes, resetMyRecipes } from "../store/myRecipes";
+import { fetchMyRecipes, resetMyRecipes } from "../store/myRecipes";
 import { useSelector, useDispatch } from 'react-redux';
 
 function MyRecipes() {
 
     /* Import the sample data created and populate the data for my recipes with the sample data*/
-    const myRecipesData = useSelector((state) => state.myRecipes);
+    const myRecipesData = useSelector((state) => state.myRecipes.data);
+    const pageNumber = useSelector((state) => state.myRecipes.pageNumber);
     const userAuthentication = useSelector((state) => state.userInfo);
 
     const dispatch = useDispatch();
     const [searchText, setSearchText] = React.useState('');
+    const [filteredRecipe, setFilteredRecipe] = React.useState([]);
     const uri = '/recipes/myRecipes';
     //need to check when to invoke the API, when the search text gets modified or invoke the API and store the result - then just filter the data when search text changes (this minimize the number of API calls but data might not be accurate because when user include a new entry that will not be displayed)
     //look ahead - for recipe names
+
+    //this useEffect is executed every time when the component is rendered, so the API call is done only first time
+    React.useEffect(() => {
+        const response = fetchRecipes(uri, pageNumber);
+        console.log(response);
+        response
+            .then(recipeData => {
+                console.log(recipeData);
+                if (recipeData.hasOwnProperty('Error')) {
+                    dispatch(resetMyRecipes());
+                    setFilteredRecipe([]);
+                } else {
+                    dispatch(fetchMyRecipes(recipeData.data));
+                    setFilteredRecipe(recipeData.data);
+                    console.log(myRecipesData);
+                }
+            })
+            .catch((error) => {
+                console.log(`New Error:${error}`);
+            })
+
+    }, [pageNumber]);
+
+    //this useEffect is executed when there is a change in the search text and it
+    //just updates the local state value with the search string filter
+
     React.useEffect(() => {
         if (searchText.length > 0) {
-            const response = fetchRecipes(uri, searchText);
-            console.log(response);
-            response
-                .then(recipeData => {
-                    console.log(recipeData);
-                    if (recipeData.data.hasOwnProperty('Error')) {
-                        dispatch(resetMyRecipes());
-                    } else {
-                        const myRecipeList = recipeData.data.filter((recipe) => {
-                            return recipe['title'].toLowerCase().includes(searchText.toLowerCase());
-                        });
-                        dispatch(searchMyRecipes(myRecipeList));
-                        console.log(myRecipesData);
-                    }
-
-                })
-                .catch((error) => {
-                    console.log(`New Error:${error}`);
-                })
+            console.log(myRecipesData);
+            let filteredList = myRecipesData.filter((recipe) => {
+                return recipe['title'].toLowerCase().includes(searchText.toLowerCase());
+            });
+            setFilteredRecipe(filteredList);
         } else {
-            dispatch(resetMyRecipes());
+            setFilteredRecipe(myRecipesData);
         }
         sessionStorage.setItem('searchText', JSON.stringify(searchText));
 
 
     }, [searchText])
 
-    const recipeCards = myRecipesData.map((recipe) => {
+    const recipeCards = filteredRecipe.map((recipe) => {
         return (
             <RecipeCard recipe={recipe} />
         )
@@ -87,6 +102,7 @@ function MyRecipes() {
             <div className="card--div spaced-element">
                 {myRecipesData.length !== 0 ? recipeCards : 'No recipes to display'}
             </div>
+            {filteredRecipe.length !== 0 && <PaginationComponent />}
         </div>
     )
 }
