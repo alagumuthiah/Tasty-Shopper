@@ -43,9 +43,17 @@ function RecipeDetails() {
             console.log(selectedRecipe);
             let uri = `/recipes/${selectedRecipe.id}`;
             console.log('Deleted');
-            deleteRecipe(uri);
+            const response = deleteRecipe(uri);
+            response
+                .then((deleteRecipe) => {
+                    if (deleteRecipe.hasOwnProperty("Error")) {
+                        alert(` Error: ${deleteRecipe.Error}`);
+                    } else {
+                        alert('Recipe successfully created');
+                    }
+                })
         } else {
-            console.log('Not deleted');
+            alert('You cancelled the operation, Recipe not deleted');
         }
     }
 

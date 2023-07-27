@@ -40,9 +40,7 @@ function LoginComponent() {
             console.log(response);
             response
                 .then((userData) => {
-                    console.log(userData);
                     console.log(userData.data);
-                    console.log();
                     if (userData.data.hasOwnProperty("userName")) {
                         console.log(userData);
                         let token = userData.headers['access-token'];
@@ -50,7 +48,7 @@ function LoginComponent() {
                         alert('Login successful');
                         dispatch(login(userData.data));
                     } else {
-                        alert(` Error: ${userData.Error}`);
+                        alert(` Error: ${userData.data.Error}`);
                     }
 
                 })

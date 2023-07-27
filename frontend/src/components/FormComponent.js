@@ -7,7 +7,7 @@ import { listIngredients } from '../store/ingredients';
 import { fetchIngredients } from '../shared/fetchData';
 import { FieldArray, Formik, Form, getIn } from 'formik';
 import * as Yup from 'yup';
-import { updateRecipe, createRecipe } from '../shared/modifyData';
+import { updateRecipeData, createRecipe } from '../shared/modifyData';
 
 //check how to handle File Upload and get the data
 //handle change and handlechangedata index - how to use the same fuction to handle changes
@@ -40,27 +40,28 @@ const validationSchema = Yup.object({
     )
 });
 
-// function createRecipe(recipeData) {
-//     console.log('Create Recipe');
-//     console.log(recipeData);
-//     //Call the POST recipe API to create a Recipe
-// }
-
-// function updateRecipe(recipeData, recipeId) {
-//     console.log('Update Recipe');
-//     console.log(recipeData);
-//     console.log(recipeId);
-//call the PUT API to update the recipe with the given Recipe ID
-// }
-
 
 const FormComponent = () => {
+    let initialValues = {
+        title: '',
+        servings: '',
+        cuisine: '',
+        instruction: [''],
+        isPublic: '',
+        ingredients: [
+            {
+                name: '', quantity: '', unit: ''
+            }
+        ]
+    }
+    const userInfo = useSelector((state) => state.userInfo);
     const ingredientList = useSelector((state) => state.ingredients);
     const dispatch = useDispatch();
     const location = useLocation(); //to get the data passed from update component
     console.log(location);
 
     if (location.state !== null) {
+        console.log(location.state);
         const { updateRecipe } = location.state;
         console.log(updateRecipe);
         const ingredients = updateRecipe.Ingredients.map((ingredient) => {
@@ -76,18 +77,7 @@ const FormComponent = () => {
             ingredients: ingredients
         }
     } else {
-        defaultValues = {
-            title: '',
-            servings: '',
-            cuisine: '',
-            instruction: [''],
-            isPublic: '',
-            ingredients: [
-                {
-                    name: '', quantity: '', unit: ''
-                }
-            ]
-        }
+        defaultValues = initialValues;
     }
 
     React.useEffect(() => {
@@ -103,15 +93,47 @@ const FormComponent = () => {
             })
     }, []);
 
-    const handleButtonClick = (event) => {
-        // console.log('Button clicked');
-        // if (location.state !== null) {
-        //     let uri = `/recipes/${updateRecipe.id}`;
-        //     updateRecipe(uri);
-        // } else {
-        //     let uri = `/recipes/`
-        //     createRecipe(uri);
-        // }
+    const handleButtonClick = (values) => {
+        console.log(values);
+        console.log('Button clicked');
+        if (location.pathname === '/create/recipe') {
+            let uri = `/recipes/`
+            values.userId = userInfo.userId;
+            values.isPublic = (values.isPublic === 'Yes') ? true : false;
+            let response = createRecipe(uri, values);
+            response
+                .then((recipeData) => {
+                    if (recipeData.hasOwnProperty("Error")) {
+                        alert(` Error: ${recipeData.Error}`);
+                    } else {
+                        alert('Recipe successfully created');
+                    }
+                })
+                .catch((error) => {
+                    alert('Internal Server Error');
+                    console.log('Error', error);
+                });
+        }
+        else {
+            let path = location.pathname.split('/');
+            let recipeId = path[path.length - 1];
+            values.userId = userInfo.userId;
+            values.isPublic = (values.isPublic === 'Yes') ? true : false;
+            let uri = `/recipes/${recipeId}`;
+            let response = updateRecipeData(uri, values);
+            response
+                .then((recipeUpdateData) => {
+                    if (recipeUpdateData.hasOwnProperty("Error")) {
+                        alert(` Error: ${recipeUpdateData.Error}`);
+                    } else {
+                        alert('Recipe successfully updated');
+                    }
+                })
+                .catch((error) => {
+                    alert('Internal Server Error');
+                    console.log('Error', error);
+                });
+        }
     }
 
     return (
@@ -120,6 +142,8 @@ const FormComponent = () => {
                 initialValues={defaultValues}
                 validationSchema={validationSchema}
                 onSubmit={values => {
+                    console.log(values);
+                    handleButtonClick(values);
                     alert(JSON.stringify(values, null, 2));
                 }}
             >
@@ -285,7 +309,7 @@ const FormComponent = () => {
                         </FieldArray>
                         <Divider style={{ marginTop: 20, marginBottom: 20 }} />
                         <div>
-                            <Button variant="contained" type="submit" onClick={handleButtonClick}>{location.state ? `UPDATE` : `CREATE`}</Button>
+                            <Button variant="contained" type="submit">{location.state ? `UPDATE` : `CREATE`}</Button>
                         </div>
                     </Form>
                 )}

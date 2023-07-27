@@ -22,8 +22,9 @@ function HomeComponent() {
         console.log(response);
         response
             .then(recipeData => {
-                console.log(recipeData);
-                if (recipeData.hasOwnProperty('Error')) {
+                console.log(recipeData.data);
+                if (recipeData.data.hasOwnProperty('Error')) {
+                    alert(` Error: ${recipeData.data.Error}`);
                     dispatch(resetPublicRecipes());
                 } else {
                     dispatch(fetchPublicRecipes(recipeData.data));
@@ -40,22 +41,30 @@ function HomeComponent() {
     React.useEffect(() => {
         console.log('Filter');
         if (searchText.length > 0) {
-            const filteredList = publicRecipesData.filter((recipe) => {
-                return recipe['title'].toLowerCase().includes(searchText.toLowerCase());
-            });
-            setFilteredRecipe(filteredList);
+            if (publicRecipesData && Array.isArray(publicRecipesData)) {
+                let filteredList = publicRecipesData.filter((recipe) => {
+                    return recipe['title'].toLowerCase().includes(searchText.toLowerCase());
+                });
+                setFilteredRecipe(filteredList);
+            } else {
+                setFilteredRecipe([]);
+            }
         } else {
-            setFilteredRecipe([]);
+            setFilteredRecipe(publicRecipesData);
         }
         sessionStorage.setItem('searchText', JSON.stringify(searchText));
 
     }, [searchText])
 
-    const recipeCards = filteredRecipe.map((recipe) => {
-        return (
-            <RecipeCard recipe={recipe} />
-        )
-    });
+    let recipeCards = null;
+    if (filteredRecipe && Array.isArray(filteredRecipe)) {
+        recipeCards = filteredRecipe.map((recipe) => {
+            return (
+                <RecipeCard recipe={recipe} />
+            )
+        });
+    }
+
 
     const handleChange = (event) => {
         setSearchText(event.target.value);
@@ -87,10 +96,9 @@ function HomeComponent() {
                 </div>
             </div>
             <div className="card--div spaced-element">
-                {publicRecipesData.length !== 0 ? recipeCards : 'No recipes to display'}
-                {/* {recipeCards} */}
+                {publicRecipesData ? recipeCards : 'No recipes to display'}
             </div>
-            {filteredRecipe.length !== 0 && <PaginationComponent />}
+            {filteredRecipe && filteredRecipe.length !== 0 && <PaginationComponent />}
         </div>
     );
 }

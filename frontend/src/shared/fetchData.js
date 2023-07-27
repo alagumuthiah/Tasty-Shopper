@@ -30,7 +30,7 @@ export async function fetchUser(uri, payload) {
     }
     catch (err) {
         console.log(err);
-        return err.response.data;
+        return err.response;
     }
 }
 

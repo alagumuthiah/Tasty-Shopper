@@ -108,7 +108,7 @@ recipeRoute.route("/")
                     });
                     if (recipeObj.length === 0) {
                         res.statusCode = 404;
-                        let errObj = { error: "Recipe with the given Recipe name doesn't exist" };
+                        let errObj = { "Error": "Recipe with the given Recipe name doesn't exist" };
                         res.json(errObj);
                     } else {
                         res.statusCode = 200;
@@ -120,7 +120,7 @@ recipeRoute.route("/")
                 }
                 catch (error) {
                     res.statusCode = 500;
-                    let errObj = { error: `Internal Server Error ${error}` }
+                    let errObj = { "Error": `Internal Server Error ${error}` }
                     res.json(errObj);
                 }
 
@@ -140,7 +140,6 @@ recipeRoute.route("/")
     //     -> create entries in Ingredient table if not present
     //     -> create entries in RecipeIngredient table
     .post(validate({ body: recipeSchema }), authenticate, async (req, res, next) => {
-
         const createRecipeIngredientTransaction = await db.sequelize.transaction();
         const createRecipeIngredientModelTrans = await db.sequelize.transaction();
         try {
@@ -202,7 +201,7 @@ recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
     console.log('User name');
     console.log(currUserName);
 
-    let limit = 1;
+    let limit = 2;
     let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
     try {
         const user = await User.findOne({
@@ -320,7 +319,7 @@ recipeRoute.get('/publicRecipes', async (req, res, next) => {
         console.log(recipeObj);
         if (recipeObj === null || recipeObj.length === 0) {
             res.statusCode = 404;
-            let errObj = { Error: "There are no public recipes" };
+            let errObj = { "Error": "There are no public recipes" };
             res.json(errObj);
         } else {
             console.log(recipeObj);
@@ -330,7 +329,7 @@ recipeRoute.get('/publicRecipes', async (req, res, next) => {
     }
     catch (error) {
         res.statusCode = 500;
-        let errObj = { error: `Internal Server Error ${error}` }
+        let errObj = { "Error": `Internal Server Error ${error}` }
         res.json(errObj);
     }
 });
@@ -379,7 +378,7 @@ recipeRoute.route("/:id")
             });
             if (recipeObj === null) {
                 res.statusCode = 404;
-                let errObj = { error: "Recipe with the given Recipe Id doesn't exist" };
+                let errObj = { "Error": "Recipe with the given Recipe Id doesn't exist" };
                 res.json(errObj);
             } else {
                 res.statusCode = 200;
@@ -388,7 +387,7 @@ recipeRoute.route("/:id")
         }
         catch (error) {
             res.statusCode = 500;
-            let errObj = { error: `Internal Server Error ${error}` }
+            let errObj = { "Error": `Internal Server Error ${error}` }
             res.json(errObj);
         }
 
@@ -508,11 +507,11 @@ recipeRoute.route("/:id")
                     console.log(error, 'Error')
                     await createRecipeIngredientModelTrans.rollback();
                     res.statusCode = 500;
-                    let errObj = { error: `Internal Server Error ${error}` }
+                    let errObj = { "Error": `Internal Server Error ${error}` }
                     res.json(errObj);
                 }
                 res.statusCode = 204;
-                res.json('UPDATE');
+                res.json({ "Result": "Updated Recipe Successfully" });
 
             } else {
                 res.statusCode = 404;
@@ -559,10 +558,10 @@ recipeRoute.route("/:id")
                     }
                 });
                 res.statusCode = 200;
-                res.json('DELETE');
+                res.json({ "Data": "Successfully Deleted the Recipe" });
             } else {
                 res.statusCode = 400;
-                let errObj = { "Error": "Recipe - created by the user is not found" };
+                let errObj = { "Error": "Recipe - not found" };
                 res.json(errObj);
             }
 

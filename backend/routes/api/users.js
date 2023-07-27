@@ -87,34 +87,42 @@ userRoute.get('/:id', async function (req, res) {
 userRoute.post('/signup', validate({ body: userSignUpSchema }), async function (req, res) {
     const { userName, firstName, lastName, email, password } = req.body;
     console.log(userName, firstName, lastName, email, password);
-    const currUser = await User.findOne({ where: { userName: userName }, attributes: ['userName', 'firstName', 'lastName', 'hashedPassword'] });
+    const currUser = await User.findOne({ where: { userName: userName }, attributes: ['userName', 'firstName', 'lastName', 'hashedPassword', 'id'] });
     if (currUser !== null) {
         res.statusCode = 403;
         res.json({ "Error": `User with the username ${userName} already exist` });
     } else {
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const newUser = await User.create({
-            userName: userName,
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            hashedPassword: hashedPassword
-        });
-        const payload = { userName }; //claims to be used to create a JSON token
-        const token = jwt.sign(payload, secretKey, {
-            expiresIn: '1h'
-        });
+        try {
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            const newUser = await User.create({
+                userName: userName,
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                hashedPassword: hashedPassword
+            });
+            const payload = { userName }; //claims to be used to create a JSON token
+            const token = jwt.sign(payload, secretKey, {
+                expiresIn: '1h'
+            });
 
-        //res.cookie('token', token);
-        res.statusCode = 200;
-        res.setHeader("access-token", token);
-        let resObj = {
-            "userName": newUser.userName,
-            "firstName": newUser.firstName,
-            "lastName": newUser.lastName,
-            "email": newUser.email,
+            //res.cookie('token', token);
+            res.statusCode = 200;
+            res.setHeader("access-token", token);
+            let resObj = {
+                "userName": newUser.userName,
+                "firstName": newUser.firstName,
+                "lastName": newUser.lastName,
+                "email": newUser.email,
+            }
+            res.json(resObj);
         }
-        res.json(resObj);
+        catch (error) {
+            res.statusCode = 500;
+            let errObj = { "Error": `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
+
     }
 
 });
@@ -124,35 +132,42 @@ userRoute.post('/login', validate({ body: userLoginSchema }), async function (re
     console.log(userName, password);
     const currUser = await User.findOne({
         where: { userName: userName },
-        attributes: ['userName', 'firstName', 'lastName', 'hashedPassword']
+        attributes: ['userName', 'firstName', 'lastName', 'hashedPassword', 'id']
     });
     console.log(currUser);
     if (currUser === null) {
         res.statusCode = 404;
         res.json({ "Error": "User with the username doesn't exist" });
     } else {
-        const isMatch = await bcrypt.compare(password, currUser.hashedPassword);
-        if (isMatch) {
-            const payload = { userName }; //the claims defined when creating JSON token has to be passed as payload when verifying the token
-            const token = jwt.sign(payload, secretKey, {
-                expiresIn: '1h'
-            });
-            // res.cookie('token', token, { httpOnly: true });
-            res.setHeader("access-token", token);
-            res.statusCode = 200;
-            res.json(currUser);
-        } else {
-            res.statusCode = 401;
-            res.json({ "Error": "Invalid credentials" });
+        try {
+            const isMatch = await bcrypt.compare(password, currUser.hashedPassword);
+            if (isMatch) {
+                const payload = { userName }; //the claims defined when creating JSON token has to be passed as payload when verifying the token
+                const token = jwt.sign(payload, secretKey, {
+                    expiresIn: '1h'
+                });
+                // res.cookie('token', token, { httpOnly: true });
+                res.setHeader("access-token", token);
+                res.statusCode = 200;
+                res.json(currUser);
+            } else {
+                res.statusCode = 401;
+                res.json({ "Error": "Invalid credentials" });
+            }
         }
-    }
+        catch (error) {
+            res.statusCode = 500;
+            let errObj = { "Error": `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
 
+    }
 
 });
 
 //Error handling to be implemented with proper error messages
 userRoute.post('/logout', authenticate, function (req, res) {
-    res.clearCookie('token');
+    //res.clearCookie('token');
     res.send('logged out');
 });
 

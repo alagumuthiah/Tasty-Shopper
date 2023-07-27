@@ -23,9 +23,11 @@ app.use('/users', userRoute);
 app.use((error, req, res, next) => {
     console.log('inside validation error');
     console.log(typeof error);
+    console.log(error);
+    console.log(req.body);
     if (error instanceof ValidationError) {
         res.status(400);
-        res.send(error.validationErrors);
+        res.send({ "Error": `Form validation Error ${error.validationErrors}` });
     } else {
         console.log(error);
         console.log('Else');

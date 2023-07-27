@@ -14,7 +14,6 @@ function MyRecipes() {
     const myRecipesData = useSelector((state) => state.myRecipes.data);
     const pageNumber = useSelector((state) => state.myRecipes.pageNumber);
     const userAuthentication = useSelector((state) => state.userInfo);
-
     const dispatch = useDispatch();
     const [searchText, setSearchText] = React.useState('');
     const [filteredRecipe, setFilteredRecipe] = React.useState([]);
@@ -29,13 +28,13 @@ function MyRecipes() {
         response
             .then(recipeData => {
                 console.log(recipeData);
-                if (recipeData.hasOwnProperty('Error')) {
+                if (recipeData.data.hasOwnProperty('Error')) {
+                    //alert(`${recipeData.data.Error}`);
                     dispatch(resetMyRecipes());
                     setFilteredRecipe([]);
                 } else {
                     dispatch(fetchMyRecipes(recipeData.data));
                     setFilteredRecipe(recipeData.data);
-                    console.log(myRecipesData);
                 }
             })
             .catch((error) => {
@@ -50,10 +49,15 @@ function MyRecipes() {
     React.useEffect(() => {
         if (searchText.length > 0) {
             console.log(myRecipesData);
-            let filteredList = myRecipesData.filter((recipe) => {
-                return recipe['title'].toLowerCase().includes(searchText.toLowerCase());
-            });
-            setFilteredRecipe(filteredList);
+            if (myRecipesData && Array.isArray(myRecipesData)) {
+                let filteredList = myRecipesData.filter((recipe) => {
+                    return recipe['title'].toLowerCase().includes(searchText.toLowerCase());
+                });
+                setFilteredRecipe(filteredList);
+            } else {
+                setFilteredRecipe([]);
+            }
+
         } else {
             setFilteredRecipe(myRecipesData);
         }
@@ -62,11 +66,14 @@ function MyRecipes() {
 
     }, [searchText])
 
-    const recipeCards = filteredRecipe.map((recipe) => {
-        return (
-            <RecipeCard recipe={recipe} />
-        )
-    })
+    let recipeCards = null;
+    if (filteredRecipe && Array.isArray(filteredRecipe)) {
+        recipeCards = filteredRecipe.map((recipe) => {
+            return (
+                <RecipeCard recipe={recipe} />
+            )
+        });
+    }
 
     const handleChange = (event) => {
         setSearchText(event.target.value);
@@ -100,9 +107,9 @@ function MyRecipes() {
                 </div>
             </div>
             <div className="card--div spaced-element">
-                {myRecipesData.length !== 0 ? recipeCards : 'No recipes to display'}
+                {recipeCards ? recipeCards : 'No recipes to display'}
             </div>
-            {filteredRecipe.length !== 0 && <PaginationComponent />}
+            {filteredRecipe && filteredRecipe.length !== 0 && <PaginationComponent />}
         </div>
     )
 }

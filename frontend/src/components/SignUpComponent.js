@@ -63,7 +63,7 @@ function SignUpComponent() {
                         alert('Signup successful');
                         dispatch(login(userData.data));
                     } else {
-                        alert(` Error: ${userData.Error}`);
+                        alert(` Error: ${userData.data.Error}`);
                     }
                 })
                 .catch((error) => {

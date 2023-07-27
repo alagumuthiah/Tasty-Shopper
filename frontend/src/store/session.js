@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
     isLogged: false,
+    userId: '',
     userName: '',
     firstName: '',
     lastName: ''
@@ -15,6 +16,7 @@ export const sessionSlice = createSlice({
             return {
                 ...state,
                 isLogged: true,
+                userId: action.payload.id,
                 userName: action.payload.userName,
                 firstName: action.payload.firstName,
                 lastName: action.payload.lastName
@@ -24,6 +26,7 @@ export const sessionSlice = createSlice({
             return {
                 ...state,
                 isLogged: false,
+                userId: '',
                 userName: '',
                 firstName: '',
                 lastName: ''
