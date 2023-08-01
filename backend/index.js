@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { ValidationError } from 'express-json-validator-middleware';
+import shoppingListRoute from './routes/api/shoppingListRouter';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(bodyParser.json());
 app.use('/recipes', recipeRoute);
 app.use('/ingredients', ingredientRoute);
 app.use('/users', userRoute);
+app.use('/shoppingList', shoppingListRoute);
 
 app.use((error, req, res, next) => {
     console.log('inside validation error');

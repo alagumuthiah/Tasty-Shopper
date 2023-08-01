@@ -80,12 +80,20 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 - quantity - float
 - unit  - Enum
 
+### ShoppingList
+
+- id -> primary key
+- userId -> foreign key references User
+- recipeList -> array
+
 ### Database Associations
 
 - User -> has many Recipes
 - Recipe -> belongs to a User
 - Ingredients <-> Recipe (Many-to-Many)
 - RecipeIngredient  -> to establish the many-to-many relationship with Recipe and Ingredient
+- User -> has One Shopping List
+- ShoppingList - > belongs to a User
 
 ### Backend Routes - API
 
@@ -109,6 +117,13 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 * View Specific Ingredient - GET /ingredients/:ingredientId
 * Add Ingredient - POST /ingredients
 * Update Specifc Ingredient - PUT /ingredient/:ingredientId
+
+# ShoppingList
+
+* View Shopping List - GET /shoppingList/:userId
+* Add Items(Recipes Ids) to Shopping List - PUT /shoppingList -(Create a shopping list for the user if it doesn't exist)
+* Remove Item from Shopping Lits - DELETE /shoppingList/:recipeId
+* Remove All Items from the Shopping List - DELETE /shoppingList
 
 # Steps to test and build the application
 

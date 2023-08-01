@@ -198,7 +198,7 @@ recipeRoute.route("/")
 
 recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
     console.log('Inside my Recipes');
-    let currUserName = req.userName;
+    let currUserName = req.userName;  // how do i get the username
     console.log('User name');
     console.log(currUserName);
 
@@ -577,4 +577,4 @@ recipeRoute.route("/:id")
 
 
 
-export default recipeRoute
+export default recipeRoute;
