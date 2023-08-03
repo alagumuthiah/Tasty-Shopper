@@ -1,11 +1,12 @@
 import { useLocation, Link } from "react-router-dom";
 import { Button } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { deleteRecipe } from "../shared/modifyData";
-
+import { useSelector, useDispatch } from 'react-redux';
+import { deleteRecipe, modifyShoppingList } from "../shared/modifyData";
+import { setItems } from "../store/shoppingListItems";
 function RecipeDetails() {
     const userInfo = useSelector((state) => state.userInfo);
     const location = useLocation();
+    const dispatch = useDispatch();
     //the variable passed as a state from the component can be accessed with the state and destructured with the same name given as a key
     const { selectedRecipe } = location.state;
     //Custom recipe has cuisine
@@ -31,10 +32,19 @@ function RecipeDetails() {
     //Get the value from local storage , convert it to an array and add the new element to the localstorage
     //Check on how localstorage has to be cleared after closing the tab and reopening
     function handleShoppingList(event) {
-        const list = JSON.parse(localStorage.getItem("shoppingList") || "[]");
-        list.push(selectedRecipe.title);
-        console.log(list);
-        localStorage.setItem("shoppingList", JSON.stringify(list));
+        let uri = `/shoppingList/${selectedRecipe.id}`;
+        const response = modifyShoppingList(uri, 'put');
+        response
+            .then((shoppingList) => {
+                console.log(shoppingList.data);
+                if (shoppingList.data.hasOwnProperty('Error')) {
+                    alert(shoppingList.data.Error);
+                } else {
+                    console.log(shoppingList.data);
+                    dispatch(setItems(shoppingList.data));
+                    alert('Added to Shopping List');
+                }
+            })
     }
 
     function handleDelete(event) {

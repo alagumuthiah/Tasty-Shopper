@@ -58,3 +58,23 @@ export async function createRecipe(uri, payload) {
         return err.response.data;
     }
 }
+
+export async function modifyShoppingList(uri, methodType) {
+    let token = sessionStorage.getItem('access-token');
+    console.log(`${baseUrl}${uri}`);
+    console.log(token);
+    try {
+        const response = await axios({
+            method: methodType,
+            headers: { 'access-token': token },
+            url: `${baseUrl}${uri}`
+        })
+        return response;
+    }
+    catch (err) {
+        console.log(err);
+        return err.response;
+    }
+}
+
+
