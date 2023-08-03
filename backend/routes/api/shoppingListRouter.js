@@ -93,15 +93,34 @@ shoppingListRoute.route("/:recipeId")
                 attributes: ['id', 'userId', 'recipeList']
             });
             let recipeId = req.params.recipeId
-            if (recipeData.recipeList === null) {
-                recipeData.recipeList = [recipeId];
-            } else {
-                if (recipeData.recipeList.indexOf(Number(recipeId)) === -1) {
+            if (recipeData.recipeList !== null) {
+                if (recipeData.recipeList.indexOf(Number(recipeId)) !== -1) {
+                    res.statusCode = 400;
+                    res.json({ "Error": "Recipe is already in the shopping List." })
+                } else {
                     recipeData.recipeList = [...recipeData.recipeList, recipeId];
+                    await recipeData.save();
+                    let recipeArray = await Recipe.findAll({
+                        where: {
+                            id: recipeData.recipeList
+                        }
+                    });
+                    res.statusCode = 200;
+                    res.json(recipeArray);
                 }
+            } else {
+                recipeData.recipeList = [recipeId];
+                await recipeData.save();
+                let recipeArray = await Recipe.findAll({
+                    where: {
+                        id: recipeData.recipeList
+                    }
+                });
+                res.statusCode = 200;
+                res.json(recipeArray);
             }
-            await recipeData.save(); // save will update the database only when the data is replaced, it doesn't update when it is mutated, so pushing an element to the array will not update the database, so we need to use spread operator
-            res.json(recipeData);
+            // save will update the database only when the data is replaced, it doesn't update when it is mutated, so pushing an element to the array will not update the database, so we need to use spread operator
+
         }
         catch (err) {
             res.statusCode = 500;
@@ -115,7 +134,7 @@ shoppingListRoute.route("/:recipeId")
     1.Delete Request with Recipe Id
     2.Update the recipe List by removing the recipe Id
     */
-
+    //Throw 404 error, when item is not found in the recipeList
     .delete(authenticate, async function (req, res) {
         let currUserName = req.userName;
         try {
@@ -137,8 +156,15 @@ shoppingListRoute.route("/:recipeId")
                 newRecipeList.splice(recipeIndex, 1);
                 recipeData.recipeList = newRecipeList;
                 await recipeData.save();
+
             }
-            res.json(recipeData);
+            let recipeArray = await Recipe.findAll({
+                where: {
+                    id: recipeData.recipeList
+                }
+            });
+            res.statusCode = 200;
+            res.json(recipeArray);
         }
         catch (err) {
             res.statusCode = 500;
