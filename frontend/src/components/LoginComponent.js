@@ -34,13 +34,11 @@ function LoginComponent() {
     });
     React.useEffect(() => {
         if (formik.isSubmitting && !formik.isValidating) {
-            console.log('Call login user');
 
             const response = fetchUser('/users/login', formik.values);
             console.log(response);
             response
                 .then((userData) => {
-                    console.log(userData.data);
                     if (userData.data.hasOwnProperty("userName")) {
                         console.log(userData);
                         let token = userData.headers['access-token'];

@@ -4,10 +4,11 @@ import authenticate from '../../auth';
 import { User } from '../../db/models';
 import bcrypt from 'bcrypt';
 import { Validator } from 'express-json-validator-middleware';
-import { secretKey, saltRounds } from '../../secret';
 
 const userRoute = express.Router();
 const { validate } = new Validator();
+const jwtConfig = require('../../db/config/config').jwtConfig;
+
 
 const userSignUpSchema = {
     type: 'object',
@@ -54,21 +55,16 @@ const userLoginSchema = {
 //Given the userId - it returns the user details
 userRoute.get('/:id', async function (req, res) {
     let userId = req.params.id;
-    console.log('GET request ID');
     const userObj = await User.findOne({
         where: { id: userId },
         attributes: ['firstName', 'lastName', 'userName', 'email']
     });
     if (userObj === null) {
-        console.log('User not found');
         res.status(404);
         let errObj = { error: "User with the given User Id doesn't exist" };
         res.json(errObj);
     } else {
-        console.log('User found');
         res.status(200);
-        console.log(userObj.dataValues);
-        console.log('after user');
         res.json(userObj.dataValues);
     }
 
@@ -93,7 +89,7 @@ userRoute.post('/signup', validate({ body: userSignUpSchema }), async function (
         res.json({ "Error": `User with the username ${userName} already exist` });
     } else {
         try {
-            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            const hashedPassword = await bcrypt.hash(password, parseInt(jwtConfig.saltRounds));
             const newUser = await User.create({
                 userName: userName,
                 firstName: firstName,
@@ -102,8 +98,8 @@ userRoute.post('/signup', validate({ body: userSignUpSchema }), async function (
                 hashedPassword: hashedPassword
             });
             const payload = { userName }; //claims to be used to create a JSON token
-            const token = jwt.sign(payload, secretKey, {
-                expiresIn: '1h'
+            const token = jwt.sign(payload, jwtConfig.secret, {
+                expiresIn: jwtConfig.expiresIn
             });
 
             //res.cookie('token', token);
@@ -143,8 +139,8 @@ userRoute.post('/login', validate({ body: userLoginSchema }), async function (re
             const isMatch = await bcrypt.compare(password, currUser.hashedPassword);
             if (isMatch) {
                 const payload = { userName }; //the claims defined when creating JSON token has to be passed as payload when verifying the token
-                const token = jwt.sign(payload, secretKey, {
-                    expiresIn: '1h'
+                const token = jwt.sign(payload, jwtConfig.secret, {
+                    expiresIn: jwtConfig.expiresIn
                 });
                 // res.cookie('token', token, { httpOnly: true });
                 res.setHeader("access-token", token);

@@ -58,7 +58,6 @@ const FormComponent = () => {
     const ingredientList = useSelector((state) => state.ingredients);
     const dispatch = useDispatch();
     const location = useLocation(); //to get the data passed from update component
-    console.log(location);
 
     if (location.state !== null) {
         console.log(location.state);
@@ -67,7 +66,6 @@ const FormComponent = () => {
         const ingredients = updateRecipe.Ingredients.map((ingredient) => {
             return { "name": ingredient.name, "quantity": ingredient.RecipeIngredient.quantity, "unit": ingredient.RecipeIngredient.unit };
         })
-        console.log(ingredients);
         defaultValues = {
             title: updateRecipe.title,
             servings: updateRecipe.servings,
@@ -82,10 +80,8 @@ const FormComponent = () => {
 
     React.useEffect(() => {
         const response = fetchIngredients('/ingredients');
-        console.log(response);
         response
             .then((ingredientData) => {
-                console.log(ingredientData);
                 dispatch(listIngredients(ingredientData));
             })
             .catch((error) => {
@@ -94,8 +90,6 @@ const FormComponent = () => {
     }, []);
 
     const handleButtonClick = (values) => {
-        console.log(values);
-        console.log('Button clicked');
         if (location.pathname === '/create/recipe') {
             let uri = `/recipes/`
             values.userId = userInfo.userId;
@@ -111,7 +105,6 @@ const FormComponent = () => {
                 })
                 .catch((error) => {
                     alert('Internal Server Error');
-                    console.log('Error', error);
                 });
         }
         else {
@@ -131,7 +124,6 @@ const FormComponent = () => {
                 })
                 .catch((error) => {
                     alert('Internal Server Error');
-                    console.log('Error', error);
                 });
         }
     }
@@ -142,7 +134,6 @@ const FormComponent = () => {
                 initialValues={defaultValues}
                 validationSchema={validationSchema}
                 onSubmit={values => {
-                    console.log(values);
                     handleButtonClick(values);
                     alert(JSON.stringify(values, null, 2));
                 }}

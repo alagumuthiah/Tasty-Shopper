@@ -23,8 +23,6 @@ app.use('/users', userRoute);
 app.use('/shoppingList', shoppingListRoute);
 
 app.use((error, req, res, next) => {
-    console.log('inside validation error');
-    console.log(typeof error);
     console.log(error);
     console.log(req.body);
     if (error instanceof ValidationError) {

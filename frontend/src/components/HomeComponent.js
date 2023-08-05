@@ -39,7 +39,6 @@ function HomeComponent() {
     }, [pageNumber])
 
     React.useEffect(() => {
-        console.log('Filter');
         if (searchText.length > 0) {
             if (publicRecipesData && Array.isArray(publicRecipesData)) {
                 let filteredList = publicRecipesData.filter((recipe) => {

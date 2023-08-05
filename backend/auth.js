@@ -1,15 +1,12 @@
 import jwt from 'jsonwebtoken';
-import { secretKey } from './secret';
+const jwtSecret = require('../backend/db/config/config').jwtConfig.secret;
+
 
 const authenticate = ((req, res, next) => {
     console.log('Authenticate');
-    //console.log(req);
     const token = req.headers['access-token'];
-    console.log('TOKEN');
-    console.log(JSON.stringify(req.headers));
-    console.log(req.headers['access-token']);
     if (token) {
-        jwt.verify(token, secretKey, function (err, decoded) {
+        jwt.verify(token, jwtSecret, function (err, decoded) {
             if (err) {
                 res.status(401).json({ "Error": "Unauthorized-Invalid Token" });
             } else {

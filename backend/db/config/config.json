@@ -1,11 +1,4 @@
 {
-  "development": {
-    "username": "postgres",
-    "password": "alagu123",
-    "database": "recipe_db",
-    "host": "127.0.0.1",
-    "dialect": "postgres"
-  },
   "test": {
     "username": "root",
     "password": null,

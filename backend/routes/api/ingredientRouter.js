@@ -21,12 +21,10 @@ const ingredientSchema = {
 ingredientRoute.route("/")
 
     .all((req, res, next) => {
-        console.log('Ths method is executed everytime');
         next();
     })
 
     .get(async (req, res, next) => {
-        console.log(req.query);
         let ingredientObj = null;
         if (req.query.name !== undefined) { // to implemet query params validation schema
             let ingredientName = req.query.name;
@@ -65,7 +63,6 @@ ingredientRoute.route("/")
             res.json(ingredientObj.dataValues);
         }
         catch (error) {
-            console.log(error);
             res.statusCode = 500;
             let errObj = { error: `Internal Server Error ${error}` }
             res.json(errObj);
@@ -84,13 +81,11 @@ ingredientRoute.route("/")
 
 ingredientRoute.route("/:id")
     .all((req, res, next) => {
-        console.log('All methods for ingredient /:id');
         next();
     })
 
     .get(async (req, res, next) => {
         let ingredientId = req.params.id;
-        console.log('GET request ID');
         try {
             const ingredientObj = await Ingredient.findByPk(ingredientId); // check how to exlude created and updated attributes when returning the result
             if (ingredientObj === null) {
@@ -126,7 +121,6 @@ ingredientRoute.route("/:id")
             res.json();
         }
         catch (error) {
-            console.log(error);
             res.statusCode = 500;
             let errObj = { error: `Internal Server Error ${error}` }
             res.json(errObj);
@@ -134,7 +128,7 @@ ingredientRoute.route("/:id")
     })
 
     .delete((req, res, next) => {
-        res.statusCodeCode = 200;
+        res.statusCode = 200;
         res.send('DELTE method');
     })
 
