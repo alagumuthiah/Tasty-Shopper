@@ -1,13 +1,14 @@
 import { TextField, Button, Typography } from "@mui/material";
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import React from 'react';
-import { fetchUser } from "../shared/fetchData";
-import { useDispatch } from 'react-redux';
+import { fetchUser } from "../utils/fetchData";
+import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../store/session';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
 function SignUpComponent() {
+    const userInfo = useSelector((state) => state.userInfo);
     const dispatch = useDispatch();
     const defaultValues = {
         userName: '',
@@ -73,6 +74,9 @@ function SignUpComponent() {
         }
     }, [formik.isSubmitting]);
 
+    if (userInfo.isLogged) {
+        return <Navigate to="/myrecipes" replace="true" />
+    }
     return (
         <form className="form-section" onSubmit={formik.handleSubmit}>
             <Typography>New User? Please Sign Up</Typography>

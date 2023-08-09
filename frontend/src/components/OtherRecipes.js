@@ -1,7 +1,7 @@
 import RecipeCard from "./RecipeCard";
 import { Typography, TextField } from "@mui/material";
 import React from "react";
-import { fetchRecipes } from '../shared/fetchData';
+import { fetchRecipes } from '../utils/fetchData';
 import { searchOtherRecipes, resetOtherRecipes } from '../store/otherRecipes';
 import { useSelector, useDispatch } from 'react-redux';
 

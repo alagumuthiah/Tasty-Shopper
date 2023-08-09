@@ -2,7 +2,7 @@ import React from 'react';
 import RecipeCard from "./RecipeCard";
 import PaginationComponent from './PaginationComponent';
 import { Typography, TextField } from "@mui/material";
-import { fetchRecipes } from '../shared/fetchData';
+import { fetchRecipes } from '../utils/fetchData';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchPublicRecipes, resetPublicRecipes } from '../store/publicRecipes';
 

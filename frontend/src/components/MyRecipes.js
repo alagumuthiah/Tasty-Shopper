@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import PaginationComponent from './PaginationComponent';
 import { Typography, TextField } from "@mui/material";
 import React from "react";
-import { fetchRecipes } from '../shared/fetchData';
+import { fetchRecipes } from '../utils/fetchData';
 import Button from "@mui/material/Button";
 import { fetchMyRecipes, resetMyRecipes } from "../store/myRecipes";
 import { useSelector, useDispatch } from 'react-redux';

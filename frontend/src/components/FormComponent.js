@@ -1,13 +1,13 @@
 import React from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { TextField, Typography, Button, FormControl, Select, MenuItem, FormLabel, Radio, RadioGroup, FormControlLabel, Divider } from '@mui/material';
 import { units, cuisineOptions } from '../data/sampleSharedData';
 import { useSelector, useDispatch } from 'react-redux';
 import { listIngredients } from '../store/ingredients';
-import { fetchIngredients } from '../shared/fetchData';
+import { fetchIngredients } from '../utils/fetchData';
 import { FieldArray, Formik, Form, getIn } from 'formik';
 import * as Yup from 'yup';
-import { updateRecipeData, createRecipe } from '../shared/modifyData';
+import { modifyRecipeData } from '../utils/modifyData';
 
 //check how to handle File Upload and get the data
 //handle change and handlechangedata index - how to use the same fuction to handle changes
@@ -58,7 +58,7 @@ const FormComponent = () => {
     const ingredientList = useSelector((state) => state.ingredients);
     const dispatch = useDispatch();
     const location = useLocation(); //to get the data passed from update component
-
+    const navigate = useNavigate();
     if (location.state !== null) {
         console.log(location.state);
         const { updateRecipe } = location.state;
@@ -94,13 +94,14 @@ const FormComponent = () => {
             let uri = `/recipes/`
             values.userId = userInfo.userId;
             values.isPublic = (values.isPublic === 'Yes') ? true : false;
-            let response = createRecipe(uri, values);
+            let response = modifyRecipeData(uri, values, 'post');
             response
                 .then((recipeData) => {
                     if (recipeData.hasOwnProperty("Error")) {
                         alert(` Error: ${recipeData.Error}`);
                     } else {
                         alert('Recipe successfully created');
+                        //navigate('/recipe/details', { state: recipeData })
                     }
                 })
                 .catch((error) => {
@@ -113,13 +114,14 @@ const FormComponent = () => {
             values.userId = userInfo.userId;
             values.isPublic = (values.isPublic === 'Yes') ? true : false;
             let uri = `/recipes/${recipeId}`;
-            let response = updateRecipeData(uri, values);
+            let response = modifyRecipeData(uri, values, 'put');
             response
                 .then((recipeUpdateData) => {
                     if (recipeUpdateData.hasOwnProperty("Error")) {
                         alert(` Error: ${recipeUpdateData.Error}`);
                     } else {
                         alert('Recipe successfully updated');
+                        //navigate('/recipe/details', { state: recipeUpdateData })
                     }
                 })
                 .catch((error) => {

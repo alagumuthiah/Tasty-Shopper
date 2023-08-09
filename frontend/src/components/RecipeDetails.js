@@ -1,12 +1,13 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Button } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteRecipe, modifyShoppingList } from "../shared/modifyData";
+import { deleteRecipe, modifyShoppingList } from "../utils/modifyData";
 import { setItems } from "../store/shoppingListItems";
 function RecipeDetails() {
     const userInfo = useSelector((state) => state.userInfo);
     const location = useLocation();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     //the variable passed as a state from the component can be accessed with the state and destructured with the same name given as a key
     const { selectedRecipe } = location.state;
     //Custom recipe has cuisine
@@ -60,6 +61,7 @@ function RecipeDetails() {
                         alert(` Error: ${deleteRecipe.Error}`);
                     } else {
                         alert('Recipe successfully created');
+                        navigate('/myrecipes');
                     }
                 })
         } else {

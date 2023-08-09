@@ -1,6 +1,6 @@
 import React from "react";
-import { shoppingListOperations } from "../shared/fetchData";
-import { modifyShoppingList } from "../shared/modifyData";
+import { shoppingListOperations } from "../utils/fetchData";
+import { modifyShoppingList } from "../utils/modifyData";
 import { useSelector, useDispatch } from 'react-redux';
 import { TextField, Button } from "@mui/material";
 import { setItems, resetItems } from "../store/shoppingListItems";

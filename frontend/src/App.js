@@ -10,6 +10,7 @@ import SignUpComponent from './components/SignUpComponent';
 import FormComponent from './components/FormComponent';
 import ShoppingList from './components/ShoppingList';
 import HomeComponent from './components/HomeComponent';
+import ProtectedRoute from './utils/ProtectedRoute';
 
 function App() {
   return (
@@ -22,14 +23,29 @@ function App() {
         <Route path="/" element={<HomeComponent />} />
         <Route path="/home" element={<HomeComponent />} />
         <Route path="/about" element={<AboutComponent />} />
-        <Route path="/myrecipes" element={<MyRecipes />} />
+        <Route path="/myrecipes" element={
+          <ProtectedRoute>
+            <MyRecipes />
+          </ProtectedRoute>
+        } />
         <Route path="/otherrecipes" element={<OtherRecipes />} />
         <Route path="/recipe/details" element={<RecipeDetails />} />
         <Route path="/login" element={<LoginComponent />} />
         <Route path="/signup" element={<SignUpComponent />} />
-        <Route path="/create/recipe" element={<FormComponent />} />
-        <Route path="/update/recipe/:recipeId" element={<FormComponent />} />
-        <Route path="/shoppinglist" element={<ShoppingList />} />
+        <Route path="/create/recipe" element={
+          <ProtectedRoute>
+            <FormComponent />
+          </ProtectedRoute>
+        } />
+        <Route path="/update/recipe/:recipeId" element={
+          <ProtectedRoute>
+            <FormComponent />
+          </ProtectedRoute>} />
+        <Route path="/shoppinglist" element={
+          <ProtectedRoute>
+            <ShoppingList />
+          </ProtectedRoute>
+        } />
       </Routes>
     </BrowserRouter>
 

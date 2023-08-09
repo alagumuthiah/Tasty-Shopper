@@ -1,14 +1,16 @@
 import { TextField, Typography } from "@mui/material";
 import ButtonComponent from '../components/ButtonComponent';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import React from 'react';
-import { fetchUser } from "../shared/fetchData";
+import { fetchUser } from "../utils/fetchData";
 import { login } from '../store/session';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
+
 function LoginComponent() {
+    const userInfo = useSelector((state) => state.userInfo);
     const dispatch = useDispatch();
     const defaultValues = {
         userName: '',
@@ -61,9 +63,12 @@ function LoginComponent() {
 
     //Use useEffect to send the data to the database and authenticate the user
     //Check for the Error, it shows login successful when I submit an empty form
+    if (userInfo.isLogged) {
+        return <Navigate to="/myrecipes" replace="true" />
+    }
     return (
         <form className="form-section" onSubmit={formik.handleSubmit}>
-            <Typography>Login to view custom recipes</Typography>
+            <Typography className="spaced-element">Login to view/create custom recipes and use shopping list</Typography>
             <div className="spaced-element">
                 <TextField
                     id="userName"
