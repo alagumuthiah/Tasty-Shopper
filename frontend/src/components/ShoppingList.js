@@ -2,6 +2,7 @@ import React from "react";
 import { shoppingListOperations } from "../shared/fetchData";
 import { modifyShoppingList } from "../shared/modifyData";
 import { useSelector, useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { TextField, Button } from "@mui/material";
 import { setItems, resetItems } from "../store/shoppingListItems";
 //To store the shopping data in database, Clear shopping list button - to delete the shopping list
@@ -9,8 +10,7 @@ function ShoppingList() {
     const shoppingListItems = useSelector((state) => state.shoppingList);
     const [servingsArray, setServingsArray] = React.useState([]);
     const dispatch = useDispatch();
-
-    const deleteItem = (id) => {
+    const deleteItem = (id, index) => {
         console.log(id);
         const uri = `/shoppingList/${id}`;
         const response = modifyShoppingList(uri, 'delete');
@@ -18,6 +18,7 @@ function ShoppingList() {
         response
             .then((shoppingList) => {
                 console.log(shoppingList);
+                handleServingsDelete(index)
                 dispatch(setItems(shoppingList.data));
             })
             .catch((error) => {
@@ -40,18 +41,16 @@ function ShoppingList() {
             })
     }
 
-    const handleServingsChange = (event, index) => {
-        console.log(event, index);
-        console.log(event.target.value);
-        //console.log(servingsArray);
-        // setServingsArray(
-        //     [...servingsArray,
-        //     servingsArray[index] = event.target.value]
-        // );
-
+    const handleServingsDelete = (index) => {
+        let servingQty = [...servingsArray];
+        servingQty.splice(index, 1);
+        setServingsArray(servingQty);
     }
-    const handleComputeItemsList = () => {
-        console.log('Compute groceries List');
+
+    const handleServingsChange = (event, index) => {
+        let servingQty = [...servingsArray];
+        servingQty[index] = event.target.value;
+        setServingsArray(servingQty);
     }
 
     React.useEffect(() => {
@@ -91,7 +90,7 @@ function ShoppingList() {
                         })}
                         value={servingsArray[index]}
                     />
-                    <Button type="button" variant="contained" onClick={() => deleteItem(item.id)}>Delete</Button>
+                    <Button type="button" variant="contained" onClick={() => deleteItem(item.id, index)}>Delete</Button>
                 </div>
             )
         })
@@ -107,11 +106,11 @@ function ShoppingList() {
             }
             {listOfShoppingItems}
             {shoppingListItems.length > 0 &&
-                <Button type="button" variant="contained" onClick={handleComputeItemsList}>Compute Items List</Button>}
-
+                <Link to={`/groceryList`} state={{ itemsList: shoppingListItems, servingsArray: servingsArray }} style={{ textDecoration: 'none' }}>
+                    <Button variant="contained" type="submit">Compute Items List</Button>
+                </Link>
+            }
         </>
-
-
     )
 }
 

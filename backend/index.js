@@ -25,6 +25,7 @@ app.use('/shoppingList', shoppingListRoute);
 app.use((error, req, res, next) => {
     console.log(error);
     console.log(req.body);
+    console.log(error.ValidationErrors);
     if (error instanceof ValidationError) {
         res.status(400);
         res.send({ "Error": `Form validation Error ${error.validationErrors}` });

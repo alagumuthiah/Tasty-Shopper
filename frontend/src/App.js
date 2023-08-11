@@ -10,6 +10,7 @@ import SignUpComponent from './components/SignUpComponent';
 import FormComponent from './components/FormComponent';
 import ShoppingList from './components/ShoppingList';
 import HomeComponent from './components/HomeComponent';
+import GroceryList from './components/groceryList';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="/create/recipe" element={<FormComponent />} />
         <Route path="/update/recipe/:recipeId" element={<FormComponent />} />
         <Route path="/shoppinglist" element={<ShoppingList />} />
+        <Route path="/groceryList" element={<GroceryList />} />
       </Routes>
     </BrowserRouter>
 
