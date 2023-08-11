@@ -4,6 +4,7 @@ import { Validator } from 'express-json-validator-middleware';
 import jwt from 'jsonwebtoken';
 import authenticate from '../../auth';
 import db from '../../db/models/index';
+import { up } from '../../db/migrations/20230707012610-create-recipe-ingredient';
 const { Op } = require("sequelize");
 const jwtSecret = require('../../db/config/config').jwtConfig.secret;
 const recipeRoute = express.Router();
@@ -51,7 +52,7 @@ const recipeSchema = {
                     },
                     unit: {
                         type: 'string',
-                        enum: ['cup', 'teaspoon', 'tablespoon', 'ml', 'liters', 'grams', 'kilograms', 'oz', 'number']
+                        enum: ['cup', 'tsp', 'Tbs', 'ml', 'l', 'g', 'kg']
                     }
                 }
             }
@@ -399,6 +400,7 @@ recipeRoute.route("/:id")
     .put(validate({ body: recipeSchema }), authenticate,
         async (req, res, next) => {
             let updateRequest = req.body;
+            console.log(updateRequest);
             let recipeId = req.params.id;
             let currUser = req.userName;
             const user = await User.findOne({ //find the userId

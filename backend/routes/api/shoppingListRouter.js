@@ -1,6 +1,6 @@
 import express from 'express';
 import authenticate from '../../auth';
-import { ShoppingList, Recipe, User } from '../../db/models';
+import { ShoppingList, Recipe, User, Ingredient } from '../../db/models';
 
 const shoppingListRoute = express.Router();
 
@@ -20,9 +20,15 @@ shoppingListRoute.route('/')
                 attributes: ['userId', 'recipeList']
             });
             let recipeArray = await Recipe.findAll({
+                include: {
+                    model: Ingredient,
+                    attributes: ['name'],
+                    through: { attributes: ['unit', 'quantity'] }
+                },
                 where: {
                     id: recipeData.recipeList
                 }
+
             });
             res.statusCode = 200;
             res.json(recipeArray);
@@ -101,6 +107,11 @@ shoppingListRoute.route("/:recipeId")
                     recipeData.recipeList = [...recipeData.recipeList, recipeId];
                     await recipeData.save();
                     let recipeArray = await Recipe.findAll({
+                        include: {
+                            model: Ingredient,
+                            attributes: ['name'],
+                            through: { attributes: ['unit', 'quantity'] }
+                        },
                         where: {
                             id: recipeData.recipeList
                         }
@@ -159,6 +170,11 @@ shoppingListRoute.route("/:recipeId")
 
             }
             let recipeArray = await Recipe.findAll({
+                include: {
+                    model: Ingredient,
+                    attributes: ['name'],
+                    through: { attributes: ['unit', 'quantity'] }
+                },
                 where: {
                     id: recipeData.recipeList
                 }

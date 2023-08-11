@@ -10,6 +10,7 @@ import SignUpComponent from './components/SignUpComponent';
 import FormComponent from './components/FormComponent';
 import ShoppingList from './components/ShoppingList';
 import HomeComponent from './components/HomeComponent';
+import GroceryList from './components/groceryList';
 import ProtectedRoute from './utils/ProtectedRoute';
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
             <ShoppingList />
           </ProtectedRoute>
         } />
+        <Route path="/groceryList" element={<GroceryList />} />
       </Routes>
     </BrowserRouter>
 

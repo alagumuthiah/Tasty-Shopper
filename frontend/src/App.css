@@ -65,3 +65,9 @@
   padding: 8px;
   align-items: center;
 }
+
+.flex-container{
+  display:flex;
+  align-items: center;
+  justify-content: space-around;
+}

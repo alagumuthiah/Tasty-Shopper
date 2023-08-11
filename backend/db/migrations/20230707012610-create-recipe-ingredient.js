@@ -21,7 +21,7 @@ module.exports = {
       },
       unit: {
         type: Sequelize.ENUM,
-        values: ['cup', 'teaspoon', 'tablespoon', 'ml', 'liters', 'grams', 'kilograms', 'oz']
+        values: ['cup', 'tsp', 'Tbs', 'ml', 'l', 'g', 'kg']
       },
       quantity: {
         type: Sequelize.FLOAT
