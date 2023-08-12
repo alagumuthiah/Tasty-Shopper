@@ -1,6 +1,6 @@
 ## Overview
 
-`Tasty Shopper` is a Repository of Recipes where users can create their own custom recipes and also view recipes uploaded by other users. It also supports creating a grocery list basically a pantry planner by selecting recipes.
+**`Tasty Shopper`** is a Repository of Recipes where users can create their own custom recipes and also view recipes uploaded by other users. It also supports creating a grocery list basically a pantry planner by selecting recipes.
 
 ## Tasty Shopper Application
 
@@ -9,6 +9,7 @@ This Application was bootstrapped with [Create React App](https://github.com/fac
 ## Tasty Shopper Setup
 
 To run this Application locally:
+
     1. Git clone the repo `https://github.com/alagumuthiah/Tasty-Shopper.git`
     2. Run `npm install` in both frontend and backend folders to install the required packages for the application.
     3. Create a .env file with the configuration for the database.
