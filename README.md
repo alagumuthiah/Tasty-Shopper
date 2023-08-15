@@ -10,16 +10,16 @@ This Application was bootstrapped with [Create React App](https://github.com/fac
 
 To run this Application locally:
 
-    1. Git clone the repo `https://github.com/alagumuthiah/Tasty-Shopper.git`
-    2. Run `npm install` in both frontend and backend folders to install the required packages for the application.
-    3. Create a .env file with the configuration for the database.
-    4. Include jwt secret and expiration time in the .env file.
-    5.Create the database using sequelize - `npx sequelize db:create`
-    6.Run `npx sequelize db:migrate` to migrate the database.
-    7.Run `npx sequelize db:seed:all` to seed the database(populate the data)
-    8.Run npm start in the backend folder to start our Express server.
-    9.run npm start in the frontend folder to start the React frontend server.
-    10.Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+1. Git clone the repo `https://github.com/alagumuthiah/Tasty-Shopper.git`
+2. Run `npm install` in both frontend and backend folders to install the required packages for the application.
+3. Create a .env file with the configuration for the database.
+4. Include jwt secret and expiration time in the .env file.
+5. Create the database using sequelize - `npx sequelize db:create`
+6. Run `npx sequelize db:migrate` to migrate the database.
+7. Run `npx sequelize db:seed:all` to seed the database(populate the data)
+8. Run npm start in the backend folder to start our Express server.
+9. run npm start in the frontend folder to start the React frontend server.
+10. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
 ## Technologies Used
 

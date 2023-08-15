@@ -47,7 +47,7 @@ export async function fetchIngredients(uri) {
     }
     catch (err) {
         console.log(err);
-        return err.response.data;
+        return err.response;
     }
 }
 
@@ -69,7 +69,7 @@ export async function fetchRecipes(uri, pageNumber) {
     }
     catch (err) {
         console.log(err);
-        return err.response.data;
+        return err.response;
     }
 }
 
@@ -90,6 +90,6 @@ export async function shoppingListOperations(uri, methodType) {
     }
     catch (err) {
         console.log(err);
-        return err.response.data;
+        return err.response;
     }
 }

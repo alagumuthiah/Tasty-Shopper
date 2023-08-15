@@ -41,7 +41,7 @@ function MyRecipes() {
                 console.log(`New Error:${error}`);
             })
 
-    }, [pageNumber]);
+    }, [dispatch, pageNumber]);
 
     //this useEffect is executed when there is a change in the search text and it
     //just updates the local state value with the search string filter
@@ -64,7 +64,7 @@ function MyRecipes() {
         sessionStorage.setItem('searchText', JSON.stringify(searchText));
 
 
-    }, [searchText])
+    }, [myRecipesData, searchText])
 
     let recipeCards = null;
     if (filteredRecipe && Array.isArray(filteredRecipe)) {
