@@ -181,8 +181,8 @@ recipeRoute.route("/")
                 }, { transaction: createRecipeIngredientModelTrans });
             }));
             await createRecipeIngredientModelTrans.commit();
-            res.statusCode = 201;
-            res.json(recipeDetails);
+
+
         }
 
         catch (error) {
@@ -191,7 +191,32 @@ recipeRoute.route("/")
             let errObj = { "Error": `Internal Server Error ${error}` }
             res.json(errObj);
         }
-    })
+
+        try {
+            const newRecipeObj = await Recipe.findByPk(recipeId, {
+                include: [
+                    {
+                        model: User,
+                        attributes: ['firstName', 'lastName', 'userName', 'id']
+                    },
+                    {
+                        model: Ingredient,
+                        attributes: ['name'],
+                        through: { attributes: ['unit', 'quantity'] }
+                    },
+                ],
+                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
+            });
+            res.statusCode = 201;
+            console.log(newRecipeObj);
+            res.json(newRecipeObj);
+        }
+        catch (error) {
+            res.statusCode = 500;
+            let errObj = { "Error": `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
+    });
 
 recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
     let currUserName = req.userName;  // how do i get the username
@@ -495,8 +520,31 @@ recipeRoute.route("/:id")
                     let errObj = { "Error": `Internal Server Error ${error}` }
                     res.json(errObj);
                 }
-                res.statusCode = 204;
-                res.json({ "Result": "Updated Recipe Successfully" });
+                res.statusCode = 200;
+                try {
+                    const newRecipeObj = await Recipe.findByPk(recipeId, {
+                        include: [
+                            {
+                                model: User,
+                                attributes: ['firstName', 'lastName', 'userName', 'id']
+                            },
+                            {
+                                model: Ingredient,
+                                attributes: ['name'],
+                                through: { attributes: ['unit', 'quantity'] }
+                            },
+                        ],
+                        attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
+                    });
+                    res.statusCode = 201;
+                    console.log(newRecipeObj);
+                    res.json(newRecipeObj);
+                }
+                catch (error) {
+                    res.statusCode = 500;
+                    let errObj = { "Error": `Internal Server Error ${error}` }
+                    res.json(errObj);
+                }
 
             } else {
                 res.statusCode = 404;

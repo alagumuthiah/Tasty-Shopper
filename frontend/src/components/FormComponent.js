@@ -101,7 +101,7 @@ const FormComponent = () => {
                         alert(` Error: ${recipeData.Error}`);
                     } else {
                         alert('Recipe successfully created');
-                        //navigate('/recipe/details', { state: recipeData })
+                        navigate('/recipe/details', { state: { 'selectedRecipe': recipeData.data } })
                     }
                 })
                 .catch((error) => {
@@ -121,11 +121,11 @@ const FormComponent = () => {
                         alert(` Error: ${recipeUpdateData.Error}`);
                     } else {
                         alert('Recipe successfully updated');
-                        //navigate('/recipe/details', { state: recipeUpdateData })
+                        navigate('/recipe/details', { state: { 'selectedRecipe': recipeUpdateData.data } });
                     }
                 })
                 .catch((error) => {
-                    alert('Internal Server Error');
+                    alert(`Internal Server Error): ${error}`);
                 });
         }
     }
