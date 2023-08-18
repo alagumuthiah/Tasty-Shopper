@@ -3,6 +3,8 @@ import { Button } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { deleteRecipe, modifyShoppingList } from "../utils/modifyData";
 import { setItems } from "../store/shoppingListItems";
+import { baseUrl } from "../utils/baseUrl";
+
 function RecipeDetails() {
     const userInfo = useSelector((state) => state.userInfo);
     const location = useLocation();
@@ -10,6 +12,12 @@ function RecipeDetails() {
     const navigate = useNavigate();
     //the variable passed as a state from the component can be accessed with the state and destructured with the same name given as a key
     const { selectedRecipe } = location.state;
+    console.log(selectedRecipe);
+    console.log(selectedRecipe.image);
+    let imgUrl = "https://source.unsplash.com/EzH46XCDQRY";
+    if (selectedRecipe.image !== null) {
+        imgUrl = `${baseUrl}/uploads/${selectedRecipe.image}`;
+    }
     //Custom recipe has cuisine
     let fromCustomRecipe = selectedRecipe.hasOwnProperty('cuisine');
     let instructions;
@@ -71,9 +79,10 @@ function RecipeDetails() {
 
     return (
 
-        <div>
+        <div class="recipe__card__detail">
             <h1>Recipe Details</h1>
             <h2>Recipe Title:{selectedRecipe.title}</h2>
+            <img class="recipe__image" src={imgUrl} alt={selectedRecipe.title} />
             <h2>Servings:{selectedRecipe.servings}</h2>
             {fromCustomRecipe &&
                 <h2>Cuisine:{selectedRecipe.cuisine}</h2>

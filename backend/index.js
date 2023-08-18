@@ -18,8 +18,8 @@ const corsOption = {
 app.use(cookieParser());
 app.use(cors(corsOption));
 app.use(bodyParser.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/recipes', recipeRoute);
 app.use('/ingredients', ingredientRoute);

@@ -138,7 +138,7 @@ recipeRoute.route("/")
     //     -> to Recipe table
     //     -> create entries in Ingredient table if not present
     //     -> create entries in RecipeIngredient table
-    .post(upload.single('recipeImg'), authenticate, async (req, res, next) => {
+    .post(authenticate, upload.single('recipeImg'), async (req, res, next) => {
         console.log('Recipe create');
         console.log(upload);
         let jsonRecipeFormat = JSON.parse(req.body.recipeBody)
@@ -221,13 +221,6 @@ recipeRoute.route("/")
             res.json(errObj);
         }
     });
-
-recipeRoute.post('/uploadImages', upload.single('imageFile'), async (req, res, next) => {
-    console.log(req.imageFile);
-    console.log(req.file);
-    console.log(req.body);
-    res.send('Upload Image');
-})
 
 recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
     let currUserName = req.userName;  // how do i get the username
@@ -433,9 +426,9 @@ recipeRoute.route("/:id")
     //     else:
     //         return 404 error
 
-    .put(validate({ body: recipeSchema }), authenticate,
+    .put(authenticate, upload.single('recipeImg'),
         async (req, res, next) => {
-            let updateRequest = req.body;
+            let updateRequest = JSON.parse(req.body.recipeBody);
             console.log(updateRequest);
             let recipeId = req.params.id;
             let currUser = req.userName;
@@ -454,12 +447,14 @@ recipeRoute.route("/:id")
             });
             if (recipeDetail !== null) {
                 try {
+                    let fileName = req.file.filename;
                     await recipeDetail.update({
                         title: updateRequest.title,
                         cuisine: updateRequest.cuisine,
                         servings: updateRequest.servings,
                         isPublic: updateRequest.isPublic,
                         instruction: updateRequest.instruction,
+                        image: fileName
                     });
                     let ingredients = updateRequest.ingredients;
 
