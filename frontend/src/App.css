@@ -71,3 +71,22 @@
   align-items: center;
   justify-content: space-around;
 }
+
+.recipe__image{
+  max-width:300px;
+  max-height:300px;
+}
+
+.recipe__card__detail{
+  padding:10px;
+}
+
+.recipe__image__small{
+  max-width:100px;
+  max-height:100px;
+}
+
+.shoppingList__container{
+  display:flex;
+  justify-content: start;
+}

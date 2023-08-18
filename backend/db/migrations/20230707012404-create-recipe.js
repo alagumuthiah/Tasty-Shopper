@@ -33,6 +33,9 @@ module.exports = {
       instruction: {
         type: Sequelize.ARRAY(Sequelize.STRING)
       },
+      image: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

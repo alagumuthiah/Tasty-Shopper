@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { TextField, Button } from "@mui/material";
 import { setItems, resetItems } from "../store/shoppingListItems";
+import { baseUrl } from "../utils/baseUrl";
 //To store the shopping data in database, Clear shopping list button - to delete the shopping list
 function ShoppingList() {
     const shoppingListItems = useSelector((state) => state.shoppingList);
@@ -85,10 +86,22 @@ function ShoppingList() {
     const listOfShoppingItems = shoppingListItems.length > 0 ?
 
         shoppingListItems.map((item, index) => {
+            let imgUrl = "https://source.unsplash.com/EzH46XCDQRY";
+            if (item.image !== null) {
+                imgUrl = `${baseUrl}/uploads/${item.image}`;
+            }
             return (
                 <div className="spaced-element">
-                    <h2>{item.title}</h2>
-                    <h4>{item.cuisine}</h4>
+                    <div class="shoppingList__container">
+                        <div class="shoppingList__items">
+                            <h2>{item.title}</h2>
+                            <h4>{item.cuisine}</h4>
+                        </div>
+                        <div class="shoppingList__img">
+                            <img class="recipe__image__small" src={imgUrl} alt={item.title} />
+                        </div>
+                    </div>
+
                     <TextField
                         id="servings"
                         name="servings"

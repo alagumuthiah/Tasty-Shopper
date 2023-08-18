@@ -23,12 +23,16 @@ export async function modifyRecipeData(uri, payload, method) {
     let token = sessionStorage.getItem('access-token');
     console.log(`${baseUrl}${uri}`);
     console.log(token);
+    let formData = new FormData();
+    formData.append('recipeImg', payload.recipeImg);
+    formData.append('recipeBody', JSON.stringify(payload));
+    console.log(formData.get('recipeBody'));
     payload = JSON.stringify(payload);
     try {
         const response = await axios({
             method: method,
             headers: { 'access-token': token },
-            data: JSON.parse(payload),
+            data: formData,
             url: `${baseUrl}${uri}`
         })
         return response;
@@ -38,6 +42,7 @@ export async function modifyRecipeData(uri, payload, method) {
         return err.response.data;
     }
 }
+
 
 
 export async function modifyShoppingList(uri, methodType) {
