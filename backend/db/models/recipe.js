@@ -23,7 +23,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     servings: DataTypes.INTEGER,
     isPublic: DataTypes.BOOLEAN,
-    instruction: DataTypes.ARRAY(DataTypes.STRING)
+    instruction: DataTypes.ARRAY(DataTypes.STRING),
+    image: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Recipe',

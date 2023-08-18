@@ -4,7 +4,7 @@ import { Validator } from 'express-json-validator-middleware';
 import jwt from 'jsonwebtoken';
 import authenticate from '../../auth';
 import db from '../../db/models/index';
-import { up } from '../../db/migrations/20230707012610-create-recipe-ingredient';
+import upload from '../../uploadFile';
 const { Op } = require("sequelize");
 const jwtSecret = require('../../db/config/config').jwtConfig.secret;
 const recipeRoute = express.Router();
@@ -103,7 +103,7 @@ recipeRoute.route("/")
                                 [Op.iLike]: `%${recipeName}%`
                             }
                         },
-                        attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
+                        attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id', 'image'],
                     });
                     if (recipeObj.length === 0) {
                         res.statusCode = 404;
@@ -138,18 +138,22 @@ recipeRoute.route("/")
     //     -> to Recipe table
     //     -> create entries in Ingredient table if not present
     //     -> create entries in RecipeIngredient table
-    .post(validate({ body: recipeSchema }), authenticate, async (req, res, next) => {
+    .post(upload.single('recipeImg'), authenticate, async (req, res, next) => {
+        console.log('Recipe create');
+        console.log(upload);
+        let jsonRecipeFormat = JSON.parse(req.body.recipeBody)
         const createRecipeIngredientTransaction = await db.sequelize.transaction();
         const createRecipeIngredientModelTrans = await db.sequelize.transaction();
         try {
-            const recipeRequest = { ...req.body };
-
+            const recipeRequest = { ...jsonRecipeFormat };
+            let fileName = req.file.filename;
             var recipeDetails = await Recipe.create({
                 title: recipeRequest.title,
                 cuisine: recipeRequest.cuisine,
                 servings: recipeRequest.servings,
                 isPublic: recipeRequest.isPublic,
                 instruction: recipeRequest.instruction,
+                image: fileName,
                 userId: recipeRequest.userId
             }, { transaction: createRecipeIngredientTransaction });
             var recipeId = recipeDetails.id; // id of the recipe created
@@ -205,7 +209,7 @@ recipeRoute.route("/")
                         through: { attributes: ['unit', 'quantity'] }
                     },
                 ],
-                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
+                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'image', 'id']
             });
             res.statusCode = 201;
             console.log(newRecipeObj);
@@ -217,6 +221,13 @@ recipeRoute.route("/")
             res.json(errObj);
         }
     });
+
+recipeRoute.post('/uploadImages', upload.single('imageFile'), async (req, res, next) => {
+    console.log(req.imageFile);
+    console.log(req.file);
+    console.log(req.body);
+    res.send('Upload Image');
+})
 
 recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
     let currUserName = req.userName;  // how do i get the username
@@ -251,7 +262,7 @@ recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
                     }
                 ],
                 where: { userId: user.id },
-                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
+                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'image', 'id']
 
             });
             if (recipeObj === null || recipeObj.length === 0) {
@@ -329,7 +340,7 @@ recipeRoute.get('/publicRecipes', async (req, res, next) => {
                 }
             ],
             where: whereClause,
-            attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
+            attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id', 'image']
         });
         if (recipeObj === null || recipeObj.length === 0) {
             res.statusCode = 404;
@@ -534,7 +545,7 @@ recipeRoute.route("/:id")
                                 through: { attributes: ['unit', 'quantity'] }
                             },
                         ],
-                        attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id']
+                        attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'image', 'id']
                     });
                     res.statusCode = 201;
                     console.log(newRecipeObj);

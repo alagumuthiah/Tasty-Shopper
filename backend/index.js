@@ -4,6 +4,7 @@ import recipeRoute from './routes/api/recipeRouter';
 import userRoute from './routes/api/users';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import path from 'path';
 import bodyParser from 'body-parser';
 import { ValidationError } from 'express-json-validator-middleware';
 import shoppingListRoute from './routes/api/shoppingListRouter';
@@ -17,10 +18,14 @@ const corsOption = {
 app.use(cookieParser());
 app.use(cors(corsOption));
 app.use(bodyParser.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
 app.use('/recipes', recipeRoute);
 app.use('/ingredients', ingredientRoute);
 app.use('/users', userRoute);
 app.use('/shoppingList', shoppingListRoute);
+
 
 app.use((error, req, res, next) => {
     console.log(error);
@@ -35,8 +40,7 @@ app.use((error, req, res, next) => {
     }
 })
 
-app.listen(3000, () => { console.log('Server listening') });
-
+app.listen(3000, () => { console.log('Server listening'); });
 
 /*
 commands to create models

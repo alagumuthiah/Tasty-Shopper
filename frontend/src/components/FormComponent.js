@@ -90,10 +90,12 @@ const FormComponent = () => {
     }, []);
 
     const handleButtonClick = (values) => {
+        console.log('submit button');
         if (location.pathname === '/create/recipe') {
             let uri = `/recipes/`
             values.userId = userInfo.userId;
             values.isPublic = (values.isPublic === 'Yes') ? true : false;
+            console.log(values.recipeImg);
             let response = modifyRecipeData(uri, values, 'post');
             response
                 .then((recipeData) => {
@@ -135,12 +137,15 @@ const FormComponent = () => {
             <Formik
                 initialValues={defaultValues}
                 validationSchema={validationSchema}
+                encType="multipart/form-data"
                 onSubmit={values => {
                     handleButtonClick(values);
-                    alert(JSON.stringify(values, null, 2));
+                    console.log(values);
+                    //alert(JSON.stringify(values, null, 2));
                 }}
+
             >
-                {({ values, touched, errors, handleChange, handleBlur }) => (
+                {({ values, touched, errors, handleChange, handleBlur, setFieldValue }) => (
                     <Form className="form-section" noValidate>
                         <div className='spaced-element'>
                             <Typography>{location.state ? 'Update Recipe' : 'Create Recipe'}</Typography>
@@ -186,6 +191,19 @@ const FormComponent = () => {
                                 </Select>
                             </FormControl>
                         </div>
+                        <div>
+                            <label> Upload File</label>
+                            <input
+                                type="file"
+                                name="recipeImg"
+                                accept="image/*"
+                                onChange={(event) => {
+                                    setFieldValue("recipeImg", event.currentTarget.files[0]);
+                                }}
+                                values={values.recipeImg}
+                            />
+                        </div>
+
                         <div className="spaced-element">
 
                             <FormLabel>Do you want to make it public?</FormLabel>
