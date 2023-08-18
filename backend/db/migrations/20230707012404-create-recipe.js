@@ -22,7 +22,7 @@ module.exports = {
       },
       cuisine: {
         type: Sequelize.ENUM,
-        values: ['Indian', 'Mexican', 'Thai', 'Italian', 'American', 'Korean', 'Vietnamese']
+        values: ['French', 'Chinese', 'Japanese', 'Italian', 'Indian', 'Mexican', 'Thai', 'American', 'Lebanese', 'Korean', 'Greek']
       },
       servings: {
         type: Sequelize.INTEGER

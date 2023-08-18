@@ -16,10 +16,10 @@ const GroceryList = () => {
         for (let index = 0; index < ingredientsList.length; index++) {
             let curIngredient = ingredientsList[index];
             let name = curIngredient.name;
-            let currQuantity = curIngredient.RecipeIngredient.quantity / currServings; //for converting it to one servings before multiplying the user given servings
+            let currQuantity = Math.ceil(curIngredient.RecipeIngredient.quantity / currServings); //for converting it to one servings before multiplying the user given servings
             console.log(curIngredient);
             if (curIngredient.RecipeIngredient.unit === 'nos') {
-                let qty = (currQuantity * servingsArray[itemIndex]).toFixed(2);
+                let qty = (currQuantity * servingsArray[itemIndex]);
                 if (ingredientObj[name] !== undefined) {
                     qty += ingredientObj[name].quantity;
                 }
@@ -54,8 +54,10 @@ const GroceryList = () => {
         let curIngredient = ingredientObj[keys[index]];
         let qty = curIngredient.quantity;
         let unit = curIngredient.unit;
-        const convertedObj = convert(qty).from(unit).toBest();
-        ingredientObj[keys[index]] = { 'quantity': convertedObj.val, 'unit': convertedObj.unit };
+        if (unit !== 'nos') {
+            const convertedObj = convert(qty).from(unit).toBest();
+            ingredientObj[keys[index]] = { 'quantity': convertedObj.val, 'unit': convertedObj.unit };
+        }
     }
     console.log(ingredientObj);
 

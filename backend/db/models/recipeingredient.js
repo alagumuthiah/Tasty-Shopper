@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   RecipeIngredient.init({
     unit: {
       type: DataTypes.ENUM,
-      values: ['cup', 'teaspoon', 'tablespoon', 'ml', 'liters', 'grams', 'kilograms', 'oz', 'number']
+      values: ['cup', 'tsp', 'Tbs', 'ml', 'l', 'g', 'kg', 'nos']
     },
     quantity: DataTypes.FLOAT
   }, {

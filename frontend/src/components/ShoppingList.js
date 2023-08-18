@@ -53,6 +53,15 @@ function ShoppingList() {
         setServingsArray(servingQty);
     }
 
+    const checkServingsArray = () => {
+        for (let index = 0; index < servingsArray.length; index++) {
+            if (servingsArray[index] <= 0) {
+                alert('Servings cannot be negative');
+                return false;
+            }
+        }
+        return true;
+    }
     React.useEffect(() => {
         console.log('useEffect');
         const uri = '/shoppingList'
@@ -105,7 +114,7 @@ function ShoppingList() {
                 <Button type="button" variant="contained" onClick={handleClearList}>Clear Shopping List</Button>
             }
             {listOfShoppingItems}
-            {shoppingListItems.length > 0 &&
+            {shoppingListItems.length > 0 && checkServingsArray() &&
                 <Link to={`/groceryList`} state={{ itemsList: shoppingListItems, servingsArray: servingsArray }} style={{ textDecoration: 'none' }}>
                     <Button variant="contained" type="submit">Compute Items List</Button>
                 </Link>

@@ -1,8 +1,5 @@
 export const units = ['cup', 'tsp', 'Tbs', 'ml', 'l', 'g', 'kg', 'nos']; //later to be populated with data from database
 
-// export const unitsUS = ["tsp", "tbsp", "cup",
-//     "pint", "quart", "gallon", "oz", "lbs"];
-
 export const cuisineOptions = ['French', 'Chinese', 'Japanese', 'Italian', 'Indian', 'Mexican', 'Thai', 'American', 'Lebanese', 'Korean', 'Greek'];
 
 

@@ -52,7 +52,7 @@ const recipeSchema = {
                     },
                     unit: {
                         type: 'string',
-                        enum: ['cup', 'tsp', 'Tbs', 'ml', 'l', 'g', 'kg']
+                        enum: ['cup', 'tsp', 'Tbs', 'ml', 'l', 'g', 'kg', 'nos']
                     }
                 }
             }
