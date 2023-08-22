@@ -68,7 +68,7 @@ function RecipeDetails() {
                     if (deleteRecipe.hasOwnProperty("Error")) {
                         alert(` Error: ${deleteRecipe.Error}`);
                     } else {
-                        alert('Recipe successfully created');
+                        alert('Recipe successfully deleted');
                         navigate('/myrecipes');
                     }
                 })

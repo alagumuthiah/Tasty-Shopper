@@ -162,9 +162,19 @@ userRoute.post('/login', validate({ body: userLoginSchema }), async function (re
 });
 
 //Error handling to be implemented with proper error messages
-userRoute.post('/logout', authenticate, function (req, res) {
-    //res.clearCookie('token');
-    res.send('logged out');
+userRoute.delete('/logout', authenticate, function (req, res) {
+    console.log('Inside logout');
+    try {
+        res.setHeader("access-token", "");
+        res.statusCode = 200;
+        res.send('Logged out successfully');
+    }
+    catch (error) {
+        res.statusCode = 500;
+        let errObj = { "Error": `Internal Server Error ${error}` }
+        res.json(errObj);
+    }
+
 });
 
 export default userRoute;

@@ -34,6 +34,22 @@ export async function fetchUser(uri, payload) {
     }
 }
 
+export async function logOutUser(uri) {
+    let token = sessionStorage.getItem('access-token');
+    try {
+        const response = await axios({
+            method: 'delete',
+            headers: { 'access-token': token },
+            url: `${baseUrl}${uri}`
+        })
+        return response;
+    }
+    catch (err) {
+        console.log(err);
+        return err.response;
+    }
+}
+
 export async function fetchIngredients(uri) {
     try {
         const response = await axios({

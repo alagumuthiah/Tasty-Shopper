@@ -9,8 +9,6 @@ import { FieldArray, Formik, Form, getIn } from 'formik';
 import * as Yup from 'yup';
 import { modifyRecipeData } from '../utils/modifyData';
 
-//check how to handle File Upload and get the data
-//handle change and handlechangedata index - how to use the same fuction to handle changes
 //Does using separate delete buttons causes re render of the text areas for instructions
 //why useParams is called everytime when I change the input fields
 

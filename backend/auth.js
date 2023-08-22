@@ -5,6 +5,7 @@ const jwtSecret = require('../backend/db/config/config').jwtConfig.secret;
 const authenticate = ((req, res, next) => {
     console.log('Authenticate');
     const token = req.headers['access-token'];
+    console.log(token);
     if (token) {
         jwt.verify(token, jwtSecret, function (err, decoded) {
             if (err) {

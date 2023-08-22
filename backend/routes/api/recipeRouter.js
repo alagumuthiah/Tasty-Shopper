@@ -1,4 +1,5 @@
 import express from 'express';
+import fs from 'fs';
 import { User, Recipe, Ingredient, RecipeIngredient } from '../../db/models';
 import { Validator } from 'express-json-validator-middleware';
 import jwt from 'jsonwebtoken';
@@ -583,6 +584,7 @@ recipeRoute.route("/:id")
                 },
             });
             if (recipe !== null) {
+                let imgFileName = recipe.image;
                 await RecipeIngredient.destroy({
                     where: {
                         RecipeId: recipeId
@@ -593,6 +595,9 @@ recipeRoute.route("/:id")
                         id: recipeId
                     }
                 });
+                if (imgFileName !== null) {
+                    fs.unlinkSync('uploads/' + imgFileName);
+                }
                 res.statusCode = 200;
                 res.json({ "Data": "Successfully Deleted the Recipe" });
             } else {

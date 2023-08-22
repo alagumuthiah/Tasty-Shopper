@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/session';
 import { resetMyRecipes } from "../store/myRecipes";
 import { resetPublicRecipes } from "../store/publicRecipes";
+import { logOutUser } from "../utils/fetchData";
 
 function NavBar() {
     const dispatch = useDispatch();
@@ -12,10 +13,18 @@ function NavBar() {
     console.log(userAuthentication);
 
     const handleLogOut = () => {
-        sessionStorage.removeItem('access-token');
-        dispatch(resetMyRecipes());
-        dispatch(resetPublicRecipes());
-        dispatch(logout());
+        logOutUser('/users/logout')
+            .then((res) => {
+                if (res.data.hasOwnProperty("Error")) {
+                    alert(` Error: ${res.data.Error}`);
+                } else {
+                    console.log(res.data);
+                    sessionStorage.removeItem('access-token');
+                    dispatch(resetMyRecipes());
+                    dispatch(resetPublicRecipes());
+                    dispatch(logout());
+                }
+            })
     }
     return (
         <div className="nav--bar">

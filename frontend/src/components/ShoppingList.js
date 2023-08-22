@@ -92,13 +92,13 @@ function ShoppingList() {
             }
             return (
                 <div className="spaced-element">
-                    <div class="shoppingList__container">
-                        <div class="shoppingList__items">
+                    <div className="shoppingList__container">
+                        <div className="shoppingList__items">
                             <h2>{item.title}</h2>
                             <h4>{item.cuisine}</h4>
                         </div>
-                        <div class="shoppingList__img">
-                            <img class="recipe__image__small" src={imgUrl} alt={item.title} />
+                        <div className="shoppingList__img">
+                            <img className="recipe__image__small" src={imgUrl} alt={item.title} />
                         </div>
                     </div>
 
