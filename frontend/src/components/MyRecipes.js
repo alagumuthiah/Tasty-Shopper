@@ -5,7 +5,7 @@ import { Typography, TextField } from "@mui/material";
 import React from "react";
 import { fetchRecipes } from '../utils/fetchData';
 import Button from "@mui/material/Button";
-import { fetchMyRecipes, resetMyRecipes } from "../store/myRecipes";
+import { fetchMyRecipes, resetMyRecipes, resetPageNumber } from "../store/myRecipes";
 import { useSelector, useDispatch } from 'react-redux';
 
 function MyRecipes() {
@@ -16,6 +16,7 @@ function MyRecipes() {
     const userAuthentication = useSelector((state) => state.userInfo);
     const dispatch = useDispatch();
     const [searchText, setSearchText] = React.useState('');
+    const [errMsg, setErrMsg] = React.useState('');
     const [filteredRecipe, setFilteredRecipe] = React.useState([]);
     const uri = '/recipes/myRecipes';
     //need to check when to invoke the API, when the search text gets modified or invoke the API and store the result - then just filter the data when search text changes (this minimize the number of API calls but data might not be accurate because when user include a new entry that will not be displayed)
@@ -29,12 +30,16 @@ function MyRecipes() {
             .then(recipeData => {
                 console.log(recipeData);
                 if (recipeData.data.hasOwnProperty('Error')) {
+                    setErrMsg(recipeData.data.Error);
                     //alert(`${recipeData.data.Error}`);
+                    console.log(recipeData.data);
                     dispatch(resetMyRecipes());
+                    dispatch(resetPageNumber(pageNumber));
                     setFilteredRecipe([]);
                 } else {
                     dispatch(fetchMyRecipes(recipeData.data));
                     setFilteredRecipe(recipeData.data);
+                    setErrMsg('');
                 }
             })
             .catch((error) => {
@@ -54,12 +59,22 @@ function MyRecipes() {
                     return recipe['title'].toLowerCase().includes(searchText.toLowerCase());
                 });
                 setFilteredRecipe(filteredList);
+                if (filteredList.length > 0) {
+                    setErrMsg('');
+                } else {
+                    setErrMsg('No recipe matches with search string');
+                }
+
             } else {
                 setFilteredRecipe([]);
+                setErrMsg('No recipe matches with search string');
             }
 
         } else {
             setFilteredRecipe(myRecipesData);
+            if (myRecipesData.length > 0) {
+                setErrMsg('');
+            }
         }
         sessionStorage.setItem('searchText', JSON.stringify(searchText));
 
@@ -74,7 +89,6 @@ function MyRecipes() {
             )
         });
     }
-
     const handleChange = (event) => {
         setSearchText(event.target.value);
     }
@@ -107,9 +121,11 @@ function MyRecipes() {
                 </div>
             </div>
             <div className="card--div spaced-element">
-                {recipeCards ? recipeCards : 'No recipes to display'}
+                {recipeCards}
+                {errMsg.length > 0 && <h3>{errMsg}</h3>}
             </div>
-            {filteredRecipe && filteredRecipe.length !== 0 && <PaginationComponent />}
+
+            <PaginationComponent />
         </div>
     )
 }

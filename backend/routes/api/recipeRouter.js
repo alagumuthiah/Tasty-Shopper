@@ -261,7 +261,7 @@ recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
             });
             if (recipeObj === null || recipeObj.length === 0) {
                 res.statusCode = 404;
-                let errObj = { "Error": "You have no recipes created" };
+                let errObj = { "Error": "No Recipes to display" };
                 res.json(errObj);
             } else {
                 res.statusCode = 200;
@@ -338,7 +338,7 @@ recipeRoute.get('/publicRecipes', async (req, res, next) => {
         });
         if (recipeObj === null || recipeObj.length === 0) {
             res.statusCode = 404;
-            let errObj = { "Error": "There are no public recipes" };
+            let errObj = { "Error": "There are no more public recipes to display" };
             res.json(errObj);
         } else {
             res.statusCode = 200;
@@ -555,7 +555,7 @@ recipeRoute.route("/:id")
 
             } else {
                 res.statusCode = 404;
-                let errObj = { "Error": "Recipe created by the user is not found" };
+                let errObj = { "Error": "Recipe with the given id not found" };
                 res.json(errObj);
             }
         })

@@ -17,19 +17,26 @@ export const myRecipeSlice = createSlice({
         },
         resetMyRecipes: (state) => {
             console.log(current(state));
-            return initialState;
+            let newState = {
+                ...state,
+                data: []
+            }
+            return newState;
         },
         setPageNumber: (state, action) => {
             let newState = {
                 ...state,
                 pageNumber: action.payload
             }
-            console.log(newState);
             return newState;
         },
-        resetPageNumber: (state) => {
+        resetPageNumber: (state, action) => {
             console.log(current(state));
-            return initialState;
+            let newState = {
+                ...state,
+                pageNumber: action.payload
+            }
+            return newState;
         }
 
     }
