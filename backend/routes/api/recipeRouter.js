@@ -1,66 +1,17 @@
 import express from 'express';
 import fs from 'fs';
 import { User, Recipe, Ingredient, RecipeIngredient } from '../../db/models';
-import { Validator } from 'express-json-validator-middleware';
 import jwt from 'jsonwebtoken';
-import authenticate from '../../auth';
+import authenticate from '../../utils/auth';
 import db from '../../db/models/index';
 import upload from '../../uploadFile';
+import { requestBodyValidation } from '../../utils/validation';
 const { Op } = require("sequelize");
 const jwtSecret = require('../../db/config/config').jwtConfig.secret;
+import Joi from 'joi';
 const recipeRoute = express.Router();
 
-const { validate } = new Validator();
 const { query, validationResult } = require('express-validator');
-
-const recipeSchema = {
-    type: 'object',
-    required: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'userId', 'ingredients'],
-    properties: {
-        title: {
-            type: 'string',
-            minLength: 2
-        },
-        cuisine: {
-            type: 'string',
-            enum: ['Indian', 'Mexican', 'Thai', 'Italian', 'American', 'Korean', 'Vietnamese']
-        },
-        servings: {
-            type: 'number',
-        },
-        isPublic: {
-            type: 'boolean'
-        },
-        instruction: {
-            type: 'array',
-        },
-        userId: {
-            type: 'number',
-        },
-        ingredients: {
-            type: 'array',
-            minItems: 1,
-            items: {
-                type: "object",
-                required: ['name', 'quantity', 'unit'],
-                properties: {
-                    name: {
-                        type: 'string',
-                        minLength: 1
-                    },
-                    quantity: {
-                        type: 'number',
-                    },
-                    unit: {
-                        type: 'string',
-                        enum: ['cup', 'tsp', 'Tbs', 'ml', 'l', 'g', 'kg', 'nos']
-                    }
-                }
-            }
-
-        }
-    }
-};
 
 
 recipeRoute.route("/")
@@ -77,7 +28,6 @@ recipeRoute.route("/")
     //check for the type of the data passed as query parameter
     .get(query('name')
         .notEmpty().withMessage('Query parameter name for search cannot be empty and it takes string value'),
-        //.isString()
         async (req, res, next) => {
             const result = validationResult(req);
             if (result.isEmpty()) {
@@ -140,94 +90,98 @@ recipeRoute.route("/")
     //     -> create entries in Ingredient table if not present
     //     -> create entries in RecipeIngredient table
     .post(authenticate, upload.single('recipeImg'), async (req, res, next) => {
-        console.log('Recipe create');
-        console.log(upload);
-        let jsonRecipeFormat = JSON.parse(req.body.recipeBody)
-        const createRecipeIngredientTransaction = await db.sequelize.transaction();
-        const createRecipeIngredientModelTrans = await db.sequelize.transaction();
-        try {
-            const recipeRequest = { ...jsonRecipeFormat };
-            let fileName = req.file.filename;
-            var recipeDetails = await Recipe.create({
-                title: recipeRequest.title,
-                cuisine: recipeRequest.cuisine,
-                servings: recipeRequest.servings,
-                isPublic: recipeRequest.isPublic,
-                instruction: recipeRequest.instruction,
-                image: fileName,
-                userId: recipeRequest.userId
-            }, { transaction: createRecipeIngredientTransaction });
-            var recipeId = recipeDetails.id; // id of the recipe created
-            const ingredientList = recipeRequest.ingredients;
+        let jsonRecipeFormat = JSON.parse(req.body.recipeBody);
+        const error = requestBodyValidation(jsonRecipeFormat, 'recipeSchema');
+        if (error) {
+            res.statusCode = 400;
+            let errObj = { "Error": `Validation Error - ${error.message}` };
+            res.json(errObj);
+        } else {
+            const createRecipeIngredientTransaction = await db.sequelize.transaction();
+            const createRecipeIngredientModelTrans = await db.sequelize.transaction();
+            try {
+                const recipeRequest = { ...jsonRecipeFormat };
+                let fileName = req.file.filename;
+                var recipeDetails = await Recipe.create({
+                    title: recipeRequest.title,
+                    cuisine: recipeRequest.cuisine,
+                    servings: recipeRequest.servings,
+                    isPublic: recipeRequest.isPublic,
+                    instruction: recipeRequest.instruction,
+                    image: fileName,
+                    userId: recipeRequest.userId
+                }, { transaction: createRecipeIngredientTransaction });
+                var recipeId = recipeDetails.id; // id of the recipe created
+                const ingredientList = recipeRequest.ingredients;
 
-            var ingredients = await Promise.all(ingredientList.map(async (ingredient) => { //need to check if ingredient has to be part of the transaction
-                let [ingredientDetail, created] = await Ingredient.findOrCreate({
-                    where: { name: ingredient.name },
-                    transaction: createRecipeIngredientTransaction
+                var ingredients = await Promise.all(ingredientList.map(async (ingredient) => { //need to check if ingredient has to be part of the transaction
+                    let [ingredientDetail, created] = await Ingredient.findOrCreate({
+                        where: { name: ingredient.name },
+                        transaction: createRecipeIngredientTransaction
+                    });
+                    return { id: ingredientDetail.id, quantity: ingredient.quantity, unit: ingredient.unit };
+                }));
+                await createRecipeIngredientTransaction.commit();
+            }
+            catch (error) {
+                await createRecipeIngredientTransaction.rollback();
+                res.statusCode = 500;
+                let errObj = { "Error": `Internal Server Error ${error}` }
+                res.json(errObj);
+            }
+
+            try {
+                await Promise.all(ingredients.map(async (ingredient) => {
+                    const recipeIngredientDetail = await RecipeIngredient.create({
+                        IngredientId: ingredient.id,
+                        RecipeId: recipeId,
+                        quantity: ingredient.quantity,
+                        unit: ingredient.unit
+                    }, { transaction: createRecipeIngredientModelTrans });
+                }));
+                await createRecipeIngredientModelTrans.commit();
+
+
+            }
+
+            catch (error) {
+                await createRecipeIngredientModelTrans.rollback();
+                res.statusCode = 500;
+                let errObj = { "Error": `Internal Server Error ${error}` }
+                res.json(errObj);
+            }
+
+            try {
+                const newRecipeObj = await Recipe.findByPk(recipeId, {
+                    include: [
+                        {
+                            model: User,
+                            attributes: ['firstName', 'lastName', 'userName', 'id']
+                        },
+                        {
+                            model: Ingredient,
+                            attributes: ['name'],
+                            through: { attributes: ['unit', 'quantity'] }
+                        },
+                    ],
+                    attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'image', 'id']
                 });
-                return { id: ingredientDetail.id, quantity: ingredient.quantity, unit: ingredient.unit };
-            }));
-            await createRecipeIngredientTransaction.commit();
-        }
-        catch (error) {
-            await createRecipeIngredientTransaction.rollback();
-            res.statusCode = 500;
-            let errObj = { "Error": `Internal Server Error ${error}` }
-            res.json(errObj);
-        }
-
-        try {
-            await Promise.all(ingredients.map(async (ingredient) => {
-                const recipeIngredientDetail = await RecipeIngredient.create({
-                    IngredientId: ingredient.id,
-                    RecipeId: recipeId,
-                    quantity: ingredient.quantity,
-                    unit: ingredient.unit
-                }, { transaction: createRecipeIngredientModelTrans });
-            }));
-            await createRecipeIngredientModelTrans.commit();
-
-
-        }
-
-        catch (error) {
-            await createRecipeIngredientModelTrans.rollback();
-            res.statusCode = 500;
-            let errObj = { "Error": `Internal Server Error ${error}` }
-            res.json(errObj);
-        }
-
-        try {
-            const newRecipeObj = await Recipe.findByPk(recipeId, {
-                include: [
-                    {
-                        model: User,
-                        attributes: ['firstName', 'lastName', 'userName', 'id']
-                    },
-                    {
-                        model: Ingredient,
-                        attributes: ['name'],
-                        through: { attributes: ['unit', 'quantity'] }
-                    },
-                ],
-                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'image', 'id']
-            });
-            res.statusCode = 201;
-            console.log(newRecipeObj);
-            res.json(newRecipeObj);
-        }
-        catch (error) {
-            res.statusCode = 500;
-            let errObj = { "Error": `Internal Server Error ${error}` }
-            res.json(errObj);
+                res.statusCode = 201;
+                console.log(newRecipeObj);
+                res.json(newRecipeObj);
+            }
+            catch (error) {
+                res.statusCode = 500;
+                let errObj = { "Error": `Internal Server Error ${error}` }
+                res.json(errObj);
+            }
         }
     });
 
 recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
-    let currUserName = req.userName;  // how do i get the username
+    let currUserName = req.userName; //username is appended to the request by authenticate middleware
     console.log('User name');
     console.log(currUserName);
-
     let limit = 2;
     let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
     try {
@@ -286,7 +240,7 @@ recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
 //     Modify the where clause by including only the recipes that are public
 recipeRoute.get('/publicRecipes', async (req, res, next) => {
 
-    let limit = 10;
+    let limit = 30;
     let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
     const token = req.headers['access-token'];
     let currUserName = '';
@@ -430,133 +384,134 @@ recipeRoute.route("/:id")
     .put(authenticate, upload.single('recipeImg'),
         async (req, res, next) => {
             let updateRequest = JSON.parse(req.body.recipeBody);
+            console.log('Update Request');
             console.log(updateRequest);
-            let recipeId = req.params.id;
-            let currUser = req.userName;
-            const user = await User.findOne({ //find the userId
-                where: {
-                    userName: currUser
-                }
-            });
-            const recipeDetail = await Recipe.findOne({
-                where: {
-                    [Op.and]: [
-                        { id: recipeId },
-                        { userId: user.id }
-                    ]
-                },
-            });
-            if (recipeDetail !== null) {
-                try {
-                    let fileName = req.file.filename;
-                    await recipeDetail.update({
-                        title: updateRequest.title,
-                        cuisine: updateRequest.cuisine,
-                        servings: updateRequest.servings,
-                        isPublic: updateRequest.isPublic,
-                        instruction: updateRequest.instruction,
-                        image: fileName
-                    });
-                    let ingredients = updateRequest.ingredients;
-
-                    let oldIngredients = await RecipeIngredient.findAll({
-                        where: { RecipeId: recipeId },
-                        attributes: ['RecipeId', 'IngredientId', 'quantity', 'unit']
-                    });
-
-                    let newIngredients = await Promise.all(ingredients.map(async (ingredient) => {
-                        let [ingredientDetail] = await Ingredient.findOrCreate({
-                            where: { name: ingredient.name }
-                        });
-                        return { IngredientId: ingredientDetail.id, quantity: ingredient.quantity, unit: ingredient.unit };
-                    }));
-                    let oldIngredientsData = oldIngredients.map((old) => {
-                        return old.dataValues;
-                    });
-                    let oldIds = oldIngredientsData.map((old) => {
-                        return old.IngredientId;
-                    });
-                    let newIds = newIngredients.map((newElt) => {
-                        return newElt.IngredientId;
-                    });
-
-
-                    let commonIngredients = newIngredients.filter((ingredient) => {
-                        return oldIds.indexOf(ingredient.IngredientId) !== -1;
-                    });
-                    let newlyAddedIngredients = newIngredients.filter((ingredient) => {
-                        return oldIds.indexOf(ingredient.IngredientId) === -1;
-                    });
-                    let toBeDeleted = oldIngredientsData.filter((old) => {
-                        return newIds.indexOf(old.IngredientId) === -1;
-                    });
-                    console.log(newlyAddedIngredients); //created
-                    console.log(commonIngredients); //updated
-                    console.log(toBeDeleted); //deleted
-                    await Promise.all(newlyAddedIngredients.map(async (newlyAdded) => {
-                        await RecipeIngredient.create({
-                            IngredientId: newlyAdded.IngredientId,
-                            RecipeId: recipeId,
-                            quantity: newlyAdded.quantity,
-                            unit: newlyAdded.unit
-                        })
-                    }));
-                    await Promise.all(commonIngredients.map(async (commonIngredient) => {
-                        await RecipeIngredient.update({
-                            quantity: commonIngredient.quantity,
-                            unit: commonIngredient.unit
-                        }, {
-                            where: {
-                                IngredientId: commonIngredient.IngredientId,
-                                RecipeId: recipeId
-                            }
-                        });
-                    }));
-                    await Promise.all(toBeDeleted.map(async (toBeDeletedElt) => {
-                        await RecipeIngredient.destroy({
-                            where: {
-                                IngredientId: toBeDeletedElt.IngredientId,
-                                RecipeId: recipeId
-                            }
-                        });
-                    }));
-
-                } catch (error) {
-                    await createRecipeIngredientModelTrans.rollback();
-                    res.statusCode = 500;
-                    let errObj = { "Error": `Internal Server Error ${error}` }
-                    res.json(errObj);
-                }
-                res.statusCode = 200;
-                try {
-                    const newRecipeObj = await Recipe.findByPk(recipeId, {
-                        include: [
-                            {
-                                model: User,
-                                attributes: ['firstName', 'lastName', 'userName', 'id']
-                            },
-                            {
-                                model: Ingredient,
-                                attributes: ['name'],
-                                through: { attributes: ['unit', 'quantity'] }
-                            },
-                        ],
-                        attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'image', 'id']
-                    });
-                    res.statusCode = 201;
-                    console.log(newRecipeObj);
-                    res.json(newRecipeObj);
-                }
-                catch (error) {
-                    res.statusCode = 500;
-                    let errObj = { "Error": `Internal Server Error ${error}` }
-                    res.json(errObj);
-                }
-
-            } else {
-                res.statusCode = 404;
-                let errObj = { "Error": "Recipe with the given id not found" };
+            const error = requestBodyValidation(updateRequest, 'recipeSchema');
+            if (error) {
+                res.statusCode = 400;
+                let errObj = { "Error": `Validation Error - ${error.message}` };
                 res.json(errObj);
+            } else {
+                let recipeId = req.params.id;
+                const recipeDetail = await Recipe.findOne({
+                    where: {
+                        [Op.and]: [
+                            { id: recipeId },
+                            { userId: updateRequest.userId }
+                        ]
+                    },
+                });
+                if (recipeDetail !== null) {
+                    try {
+                        let fileName = req.file.filename;
+                        await recipeDetail.update({
+                            title: updateRequest.title,
+                            cuisine: updateRequest.cuisine,
+                            servings: updateRequest.servings,
+                            isPublic: updateRequest.isPublic,
+                            instruction: updateRequest.instruction,
+                            image: fileName
+                        });
+                        let ingredients = updateRequest.ingredients;
+
+                        let oldIngredients = await RecipeIngredient.findAll({
+                            where: { RecipeId: recipeId },
+                            attributes: ['RecipeId', 'IngredientId', 'quantity', 'unit']
+                        });
+
+                        let newIngredients = await Promise.all(ingredients.map(async (ingredient) => {
+                            let [ingredientDetail] = await Ingredient.findOrCreate({
+                                where: { name: ingredient.name }
+                            });
+                            return { IngredientId: ingredientDetail.id, quantity: ingredient.quantity, unit: ingredient.unit };
+                        }));
+                        let oldIngredientsData = oldIngredients.map((old) => {
+                            return old.dataValues;
+                        });
+                        let oldIds = oldIngredientsData.map((old) => {
+                            return old.IngredientId;
+                        });
+                        let newIds = newIngredients.map((newElt) => {
+                            return newElt.IngredientId;
+                        });
+
+
+                        let commonIngredients = newIngredients.filter((ingredient) => {
+                            return oldIds.indexOf(ingredient.IngredientId) !== -1;
+                        });
+                        let newlyAddedIngredients = newIngredients.filter((ingredient) => {
+                            return oldIds.indexOf(ingredient.IngredientId) === -1;
+                        });
+                        let toBeDeleted = oldIngredientsData.filter((old) => {
+                            return newIds.indexOf(old.IngredientId) === -1;
+                        });
+                        console.log(newlyAddedIngredients); //created
+                        console.log(commonIngredients); //updated
+                        console.log(toBeDeleted); //deleted
+                        await Promise.all(newlyAddedIngredients.map(async (newlyAdded) => {
+                            await RecipeIngredient.create({
+                                IngredientId: newlyAdded.IngredientId,
+                                RecipeId: recipeId,
+                                quantity: newlyAdded.quantity,
+                                unit: newlyAdded.unit
+                            })
+                        }));
+                        await Promise.all(commonIngredients.map(async (commonIngredient) => {
+                            await RecipeIngredient.update({
+                                quantity: commonIngredient.quantity,
+                                unit: commonIngredient.unit
+                            }, {
+                                where: {
+                                    IngredientId: commonIngredient.IngredientId,
+                                    RecipeId: recipeId
+                                }
+                            });
+                        }));
+                        await Promise.all(toBeDeleted.map(async (toBeDeletedElt) => {
+                            await RecipeIngredient.destroy({
+                                where: {
+                                    IngredientId: toBeDeletedElt.IngredientId,
+                                    RecipeId: recipeId
+                                }
+                            });
+                        }));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.statusCode = 500;
+                        let errObj = { "Error": `Internal Server Error ${error}` }
+                        res.json(errObj);
+                    }
+                    try {
+                        const newRecipeObj = await Recipe.findByPk(recipeId, {
+                            include: [
+                                {
+                                    model: User,
+                                    attributes: ['firstName', 'lastName', 'userName', 'id']
+                                },
+                                {
+                                    model: Ingredient,
+                                    attributes: ['name'],
+                                    through: { attributes: ['unit', 'quantity'] }
+                                },
+                            ],
+                            attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'image', 'id']
+                        });
+                        res.statusCode = 201;
+                        console.log(newRecipeObj);
+                        res.json(newRecipeObj);
+                    }
+                    catch (error) {
+                        res.statusCode = 500;
+                        let errObj = { "Error": `Internal Server Error ${error}` }
+                        res.json(errObj);
+                    }
+
+                } else {
+                    res.statusCode = 404;
+                    let errObj = { "Error": "Recipe with the given id not found" };
+                    res.json(errObj);
+                }
             }
         })
 

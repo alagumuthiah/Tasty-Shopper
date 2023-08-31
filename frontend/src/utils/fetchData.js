@@ -18,6 +18,7 @@ export async function fetchOtherRecipes(url, searchText) {
 
 export async function fetchUser(uri, payload) {
     console.log('Payload', payload);
+    console.log(typeof payload);
     try {
         const response = await axios({
             method: 'post',

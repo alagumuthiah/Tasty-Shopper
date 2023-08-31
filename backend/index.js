@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
 import bodyParser from 'body-parser';
+import upload from './uploadFile';
 import { ValidationError } from 'express-json-validator-middleware';
 import shoppingListRoute from './routes/api/shoppingListRouter';
 
@@ -18,9 +19,7 @@ const corsOption = {
 app.use(cookieParser());
 app.use(cors(corsOption));
 app.use(bodyParser.json());
-
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 app.use('/recipes', recipeRoute);
 app.use('/ingredients', ingredientRoute);
 app.use('/users', userRoute);
@@ -37,6 +36,8 @@ app.use((error, req, res, next) => {
     } else {
         console.log(error);
         console.log('Else');
+        res.status(400);
+        res.send({ "Error": "User data format error" });
     }
 })
 

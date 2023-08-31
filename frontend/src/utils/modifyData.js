@@ -28,6 +28,8 @@ export async function modifyRecipeData(uri, payload, method) {
     formData.append('recipeBody', JSON.stringify(payload));
     console.log(formData.get('recipeBody'));
     payload = JSON.stringify(payload);
+    console.log('PAYLOAD', payload);
+    console.log(typeof payload);
     try {
         const response = await axios({
             method: method,

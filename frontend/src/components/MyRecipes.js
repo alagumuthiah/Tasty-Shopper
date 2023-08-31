@@ -31,7 +31,6 @@ function MyRecipes() {
                 console.log(recipeData);
                 if (recipeData.data.hasOwnProperty('Error')) {
                     setErrMsg(recipeData.data.Error);
-                    //alert(`${recipeData.data.Error}`);
                     console.log(recipeData.data);
                     dispatch(resetMyRecipes());
                     dispatch(resetPageNumber(pageNumber));

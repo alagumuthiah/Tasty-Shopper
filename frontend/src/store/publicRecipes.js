@@ -18,7 +18,11 @@ export const publicRecipeSlice = createSlice({
             return newState;
         },
         resetPublicRecipes: (state) => {
-            return initialState;
+            let newState = {
+                ...state,
+                data: []
+            }
+            return newState;
         },
         setPublicRecipePageNumber: (state, action) => {
             let newState = {
@@ -27,8 +31,12 @@ export const publicRecipeSlice = createSlice({
             }
             return newState;
         },
-        resetPublicRecipePageNumber: (state) => {
-            return initialState;
+        resetPublicRecipePageNumber: (state, action) => {
+            let newState = {
+                ...state,
+                pageNumber: action.payload
+            }
+            return newState;
         }
     }
 });

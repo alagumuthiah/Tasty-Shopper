@@ -5,6 +5,7 @@ import { Typography, TextField } from "@mui/material";
 import { fetchRecipes } from '../utils/fetchData';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchPublicRecipes, resetPublicRecipes } from '../store/publicRecipes';
+import { resetPageNumber } from '../store/myRecipes';
 
 function HomeComponent() {
     const userAuthentication = useSelector((state) => state.userInfo);
@@ -13,7 +14,7 @@ function HomeComponent() {
     const dispatch = useDispatch();
     const [searchText, setSearchText] = React.useState('');
     const [filteredRecipe, setFilteredRecipe] = React.useState([]);
-
+    const [errMsg, setErrMsg] = React.useState('');
 
     const uri = '/recipes/publicRecipes';
     React.useEffect(() => {
@@ -24,11 +25,14 @@ function HomeComponent() {
             .then(recipeData => {
                 console.log(recipeData.data);
                 if (recipeData.data.hasOwnProperty('Error')) {
-                    alert(` Error: ${recipeData.data.Error}`);
+                    setErrMsg(recipeData.data.Error);
                     dispatch(resetPublicRecipes());
+                    dispatch(resetPageNumber(pageNumber));
+                    setFilteredRecipe([]);
                 } else {
                     dispatch(fetchPublicRecipes(recipeData.data));
                     setFilteredRecipe(recipeData.data);
+                    setErrMsg('');
                 }
 
             })
@@ -36,7 +40,7 @@ function HomeComponent() {
                 console.log(`New Error:${error}`);
             })
 
-    }, [pageNumber])
+    }, [dispatch, pageNumber])
 
     React.useEffect(() => {
         if (searchText.length > 0) {
@@ -45,15 +49,24 @@ function HomeComponent() {
                     return recipe['title'].toLowerCase().includes(searchText.toLowerCase());
                 });
                 setFilteredRecipe(filteredList);
+                if (filteredList.length > 0) {
+                    setErrMsg('');
+                } else {
+                    setErrMsg('No recipe matches with search string');
+                }
             } else {
                 setFilteredRecipe([]);
+                setErrMsg('No recipe matches with search string');
             }
         } else {
             setFilteredRecipe(publicRecipesData);
+            if (publicRecipesData.length > 0) {
+                setErrMsg('');
+            }
         }
         sessionStorage.setItem('searchText', JSON.stringify(searchText));
 
-    }, [searchText])
+    }, [publicRecipesData, searchText])
 
     let recipeCards = null;
     if (filteredRecipe && Array.isArray(filteredRecipe)) {
@@ -95,9 +108,10 @@ function HomeComponent() {
                 </div>
             </div>
             <div className="card--div spaced-element">
-                {publicRecipesData ? recipeCards : 'No recipes to display'}
+                {recipeCards}
+                {errMsg.length > 0 && <h3>{errMsg}</h3>}
             </div>
-            {filteredRecipe && filteredRecipe.length !== 0 && <PaginationComponent />}
+            <PaginationComponent />
         </div>
     );
 }
