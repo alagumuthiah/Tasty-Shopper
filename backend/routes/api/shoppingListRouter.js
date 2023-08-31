@@ -1,6 +1,7 @@
 import express from 'express';
 import authenticate from '../../auth';
 import { ShoppingList, Recipe, User, Ingredient } from '../../db/models';
+import { paramsValidation } from '../../utils/validation';
 
 const shoppingListRoute = express.Router();
 
@@ -63,22 +64,27 @@ shoppingListRoute.route('/')
             res.statusCode = 500;
             res.json({ "Error": "Internal Server Error" });
         }
-    });
+    })
+
+    .all((req, res) => {
+        res.statusCode = 405;
+        let errObj = { "Error": "Method not allowed" }
+        res.json(errObj);
+    })
 /*
 1.Update request - Given the recipe Id
 2.Find the userId currently logged
 3.Update the shoppingList table recipe list
-    -> Query the recipe list - returns an array. If Shopping List for Userid doesn't exisit create one.
+    -> Query the recipe list - returns an array. If Shopping List for Userid doesn't exist create one.
     -> Append the recipe Id and update the shopping List entry for the current user
 */
 
-shoppingListRoute.route("/:recipeId")
+shoppingListRoute.route("/:id")
     .all((req, res, next) => {
-        let idNumber = parseInt(req.params.recipeId);
-        console.log(idNumber);
-        if (req.params.recipeId === undefined || isNaN(idNumber)) {
+        const error = paramsValidation(req.params, 'routeParams');
+        if (error) {
             res.statusCode = 400;
-            let errObj = { "Error": "Bad request query parameter not passed" }
+            let errObj = { "Error": `Validation Error - Route Parameter- ${error.message}` };
             res.json(errObj);
         } else {
             next();
@@ -98,7 +104,7 @@ shoppingListRoute.route("/:recipeId")
                 },
                 attributes: ['id', 'userId', 'recipeList']
             });
-            let recipeId = req.params.recipeId
+            let recipeId = req.params.id
             if (recipeData.recipeList !== null) {
                 if (recipeData.recipeList.indexOf(Number(recipeId)) !== -1) {
                     res.statusCode = 400;
@@ -160,7 +166,7 @@ shoppingListRoute.route("/:recipeId")
                 },
                 attributes: ['id', 'userId', 'recipeList']
             });
-            let recipeId = req.params.recipeId
+            let recipeId = req.params.id
             let recipeIndex = recipeData.recipeList.indexOf(Number(recipeId));
             let newRecipeList = [...recipeData.recipeList];
             if (recipeIndex !== -1) {
@@ -187,7 +193,13 @@ shoppingListRoute.route("/:recipeId")
             console.log(err);
             res.json({ "Error": "Internal Server Error" });
         }
-    });
+    })
+
+    .all((req, res) => {
+        res.statusCode = 405;
+        let errObj = { "Error": "Method not allowed" }
+        res.json(errObj);
+    })
 
 
 export default shoppingListRoute;

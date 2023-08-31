@@ -37,9 +37,31 @@ let schemaMapping = {
     'userSignUpSchema': userSignUpSchema
 }
 
+let paramsSchema = {
+    'routeParams': Joi.object().keys({
+        id: Joi.number().required()
+    }),
+    'queryParams': Joi.object().keys({
+        page: Joi.number(),
+        name: Joi.string()
+    })
+}
+
 export const requestBodyValidation = (reqBody, schema) => {
     if (schemaMapping[schema]) {
         const result = schemaMapping[schema].validate(reqBody);
+        const { error } = result;
+        if (error) {
+            return error.details[0];
+        }
+    } else {
+        return { 'message': 'No matching schema found' }
+    }
+}
+
+export const paramsValidation = (params, type) => {
+    if (paramsSchema[type]) {
+        const result = paramsSchema[type].validate(params);
         const { error } = result;
         if (error) {
             return error.details[0];

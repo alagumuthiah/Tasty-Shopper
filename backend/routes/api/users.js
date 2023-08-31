@@ -3,28 +3,12 @@ import jwt from 'jsonwebtoken';
 import authenticate from '../../auth';
 import { User } from '../../db/models';
 import bcrypt from 'bcrypt';
-import { requestBodyValidation } from '../../utils/validation';
+import { requestBodyValidation, paramsValidation } from '../../utils/validation';
 
 const userRoute = express.Router();
 const jwtConfig = require('../../db/config/config').jwtConfig;
 
-//Given the userId - it returns the user details
-userRoute.get('/:id', async function (req, res) {
-    let userId = req.params.id;
-    const userObj = await User.findOne({
-        where: { id: userId },
-        attributes: ['firstName', 'lastName', 'userName', 'email']
-    });
-    if (userObj === null) {
-        res.status(404);
-        let errObj = { error: "User with the given User Id doesn't exist" };
-        res.json(errObj);
-    } else {
-        res.status(200);
-        res.json(userObj.dataValues);
-    }
 
-});
 
 //One way hash for storing the password
 /*1.We get the data from the req.body
@@ -134,6 +118,8 @@ userRoute.post('/login', async function (req, res) {
     }
 });
 
+
+
 //Error handling to be implemented with proper error messages
 userRoute.delete('/logout', authenticate, function (req, res) {
     console.log('Inside logout');
@@ -151,5 +137,49 @@ userRoute.delete('/logout', authenticate, function (req, res) {
     }
 
 });
+
+userRoute.all('/signup', (req, res) => {
+    res.status(405).send('Method not allowed');
+})
+
+userRoute.all('/login', (req, res) => {
+    res.status(405).send('Method not allowed');
+})
+
+userRoute.all('/logout', (req, res) => {
+    res.status(405).send('Method not allowed');
+})
+
+
+//Given the userId - it returns the user details
+userRoute.get('/:id', async function (req, res) {
+    console.log('id');
+    const error = paramsValidation(req.params, 'routeParams');
+    if (error) {
+        res.statusCode = 400;
+        let errObj = { "Error": `Validation Error - Route Parameter- ${error.message}` };
+        res.json(errObj);
+    } else {
+        let userId = req.params.id;
+        const userObj = await User.findOne({
+            where: { id: userId },
+            attributes: ['firstName', 'lastName', 'userName', 'email']
+        });
+        if (userObj === null) {
+            res.status(404);
+            let errObj = { error: "User with the given User Id doesn't exist" };
+            res.json(errObj);
+        } else {
+            res.status(200);
+            res.json(userObj.dataValues);
+        }
+    }
+});
+
+
+userRoute.all('/:id', (req, res) => {
+    res.status(405).send('Method not allowed');
+})
+
 
 export default userRoute;

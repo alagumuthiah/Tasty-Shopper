@@ -5,14 +5,10 @@ import jwt from 'jsonwebtoken';
 import authenticate from '../../utils/auth';
 import db from '../../db/models/index';
 import upload from '../../uploadFile';
-import { requestBodyValidation } from '../../utils/validation';
+import { requestBodyValidation, paramsValidation } from '../../utils/validation';
 const { Op } = require("sequelize");
 const jwtSecret = require('../../db/config/config').jwtConfig.secret;
-import Joi from 'joi';
 const recipeRoute = express.Router();
-
-const { query, validationResult } = require('express-validator');
-
 
 recipeRoute.route("/")
     .all((req, res, next) => {
@@ -26,60 +22,61 @@ recipeRoute.route("/")
     include validations for query parameters
     */
     //check for the type of the data passed as query parameter
-    .get(query('name')
-        .notEmpty().withMessage('Query parameter name for search cannot be empty and it takes string value'),
-        async (req, res, next) => {
-            const result = validationResult(req);
-            if (result.isEmpty()) {
-                let recipeName = req.query.name;
-                let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
-                let limit = 5;
-                try {
-                    const recipeObj = await Recipe.findAll({
-                        limit: limit,
-                        offset: (pageNumber - 1) * limit,
-                        include: [
-                            {
-                                model: User,
-                                attributes: ['firstName', 'lastName', 'userName', 'id']
-                            },
-                            {
-                                model: Ingredient,
-                                attributes: ['name'],
-                                through: { attributes: ['unit', 'quantity'] }
-                            },
-                        ],
-                        where: {
-                            title: {
-                                [Op.iLike]: `%${recipeName}%`
-                            }
-                        },
-                        attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id', 'image'],
-                    });
-                    if (recipeObj.length === 0) {
-                        res.statusCode = 404;
-                        let errObj = { "Error": "Recipe with the given Recipe name doesn't exist" };
-                        res.json(errObj);
-                    } else {
-                        res.statusCode = 200;
-                        const recipeData = recipeObj.map((recipe) => {
-                            return (recipe.dataValues)
-                        })
-                        res.json(recipeData);
-                    }
-                }
-                catch (error) {
-                    res.statusCode = 500;
-                    let errObj = { "Error": `Internal Server Error ${error}` }
-                    res.json(errObj);
-                }
 
-            } else {
-                res.statusCode = 400;
-                let errObj = { "Error": result.array() };
-                res.json(errObj)
+    .get(async (req, res, next) => {
+        console.log('inside get');
+        console.log(req.query);
+        const searchError = paramsValidation(req.query, 'queryParams');
+        const pageError = paramsValidation(req.query, 'queryParams');
+        if (searchError || pageError) {
+            res.statusCode = 400;
+            let errObj = { "Error": `Validation Error - Route Parameter- ${(searchError && searchError.message) || (pageError && pageError.message)}` };
+            res.json(errObj);
+        } else {
+            let recipeName = req.query.name;
+            let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
+            let limit = 5;
+            try {
+                const recipeObj = await Recipe.findAll({
+                    limit: limit,
+                    offset: (pageNumber - 1) * limit,
+                    include: [
+                        {
+                            model: User,
+                            attributes: ['firstName', 'lastName', 'userName', 'id']
+                        },
+                        {
+                            model: Ingredient,
+                            attributes: ['name'],
+                            through: { attributes: ['unit', 'quantity'] }
+                        },
+                    ],
+                    where: {
+                        title: {
+                            [Op.iLike]: `%${recipeName}%`
+                        }
+                    },
+                    attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id', 'image'],
+                });
+                if (recipeObj.length === 0) {
+                    res.statusCode = 404;
+                    let errObj = { "Error": "Recipe with the given Recipe name doesn't exist" };
+                    res.json(errObj);
+                } else {
+                    res.statusCode = 200;
+                    const recipeData = recipeObj.map((recipe) => {
+                        return (recipe.dataValues)
+                    })
+                    res.json(recipeData);
+                }
             }
-        })
+            catch (error) {
+                res.statusCode = 500;
+                let errObj = { "Error": `Internal Server Error ${error}` }
+                res.json(errObj);
+            }
+        }
+    })
 
     //when one of the query doesn't work, that condition needs to be handled
 
@@ -178,59 +175,81 @@ recipeRoute.route("/")
         }
     });
 
+recipeRoute.all('/', (req, res) => {
+    res.statusCode = 405;
+    let errObj = { "Error": "Method not allowed" }
+    res.json(errObj);
+});
+
+
 recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
     let currUserName = req.userName; //username is appended to the request by authenticate middleware
     console.log('User name');
     console.log(currUserName);
-    let limit = 2;
-    let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
-    try {
-        const user = await User.findOne({
-            where: {
-                userName: currUserName
-            }
-        });
-        if (user !== null) {
-            const recipeObj = await Recipe.findAll({
-                limit: limit,
-                offset: (pageNumber - 1) * limit,
-                include: {
-                    model: User,
-                    attributes: ['firstName', 'lastName', 'userName']
-                },
-                include: [
-                    {
+    console.log(req.query)
+    const error = paramsValidation(req.query, 'queryParams');
+    if (error) {
+        res.statusCode = 400;
+        let errObj = { "Error": `Validation Error - Query Parameter- ${error.message}` };
+        res.json(errObj);
+    } else {
+        let limit = 4;
+        let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
+        try {
+            const user = await User.findOne({
+                where: {
+                    userName: currUserName
+                }
+            });
+            if (user !== null) {
+                const recipeObj = await Recipe.findAll({
+                    limit: limit,
+                    offset: (pageNumber - 1) * limit,
+                    include: {
                         model: User,
                         attributes: ['firstName', 'lastName', 'userName']
                     },
-                    {
-                        model: Ingredient,
-                        attributes: ['name'],
-                        through: { attributes: ['unit', 'quantity'] }
-                    }
-                ],
-                where: { userId: user.id },
-                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'image', 'id']
+                    include: [
+                        {
+                            model: User,
+                            attributes: ['firstName', 'lastName', 'userName']
+                        },
+                        {
+                            model: Ingredient,
+                            attributes: ['name'],
+                            through: { attributes: ['unit', 'quantity'] }
+                        }
+                    ],
+                    where: { userId: user.id },
+                    attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'image', 'id']
 
-            });
-            if (recipeObj === null || recipeObj.length === 0) {
-                res.statusCode = 404;
-                let errObj = { "Error": "No Recipes to display" };
-                res.json(errObj);
+                });
+                if (recipeObj === null || recipeObj.length === 0) {
+                    res.statusCode = 404;
+                    let errObj = { "Error": "No Recipes to display" };
+                    res.json(errObj);
+                } else {
+                    res.statusCode = 200;
+                    res.json(recipeObj);
+                }
             } else {
-                res.statusCode = 200;
-                res.json(recipeObj);
+                res.json({ "Error": "Please login to view Recipes" });
             }
-        } else {
-            res.json({ "Error": "Please login to view Recipes" });
-        }
 
+        }
+        catch (error) {
+            res.statusCode = 500;
+            let errObj = { "Error": `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
     }
-    catch (error) {
-        res.statusCode = 500;
-        let errObj = { "Error": `Internal Server Error ${error}` }
-        res.json(errObj);
-    }
+
+});
+
+recipeRoute.all('/myRecipes', (req, res) => {
+    res.statusCode = 405;
+    let errObj = { "Error": "Method not allowed" }
+    res.json(errObj);
 });
 
 // 1.Validate if the user is logged in
@@ -241,78 +260,92 @@ recipeRoute.get('/myRecipes', authenticate, async (req, res, next) => {
 recipeRoute.get('/publicRecipes', async (req, res, next) => {
 
     let limit = 30;
-    let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
-    const token = req.headers['access-token'];
-    let currUserName = '';
-    if (token) {
-        jwt.verify(token, jwtSecret, function (err, decoded) {
-            if (!err) {
-                currUserName = decoded.userName;
-            }
-        })
-    }
-    let whereClause = {
-        isPublic: true
-    };
-    if (currUserName.length !== 0) {
-        const user = await User.findOne({ //find the userId
-            where: {
-                userName: currUserName
-            }
-        });
-        whereClause = {
-            [Op.or]: [
-                { isPublic: true },
-                { userId: user.id }
-            ]
-        }
-    }
-
-    try {
-        const recipeObj = await Recipe.findAll({
-            limit: limit,
-            offset: (pageNumber - 1) * limit,
-            include: {
-                model: User,
-                attributes: ['firstName', 'lastName', 'userName']
-            },
-            include: [
-                {
-                    model: User,
-                    attributes: ['firstName', 'lastName']
-                },
-                {
-                    model: Ingredient,
-                    attributes: ['name'],
-                    through: { attributes: ['unit', 'quantity'] }
-                }
-            ],
-            where: whereClause,
-            attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id', 'image']
-        });
-        if (recipeObj === null || recipeObj.length === 0) {
-            res.statusCode = 404;
-            let errObj = { "Error": "There are no more public recipes to display" };
-            res.json(errObj);
-        } else {
-            res.statusCode = 200;
-            res.json(recipeObj);
-        }
-    }
-    catch (error) {
-        res.statusCode = 500;
-        let errObj = { "Error": `Internal Server Error ${error}` }
+    const error = paramsValidation(req.query, 'queryParams');
+    if (error) {
+        res.statusCode = 400;
+        let errObj = { "Error": `Validation Error - Query Parameter- ${error.message}` };
         res.json(errObj);
+    } else {
+        let pageNumber = (req.query.page === undefined || req.query.page < 1) ? 1 : req.query.page;
+        const token = req.headers['access-token'];
+        let currUserName = '';
+        if (token) {
+            jwt.verify(token, jwtSecret, function (err, decoded) {
+                if (!err) {
+                    currUserName = decoded.userName;
+                }
+            })
+        }
+        let whereClause = {
+            isPublic: true
+        };
+        if (currUserName.length !== 0) {
+            const user = await User.findOne({ //find the userId
+                where: {
+                    userName: currUserName
+                }
+            });
+            whereClause = {
+                [Op.or]: [
+                    { isPublic: true },
+                    { userId: user.id }
+                ]
+            }
+        }
+
+        try {
+            const recipeObj = await Recipe.findAll({
+                limit: limit,
+                offset: (pageNumber - 1) * limit,
+                include: {
+                    model: User,
+                    attributes: ['firstName', 'lastName', 'userName']
+                },
+                include: [
+                    {
+                        model: User,
+                        attributes: ['firstName', 'lastName']
+                    },
+                    {
+                        model: Ingredient,
+                        attributes: ['name'],
+                        through: { attributes: ['unit', 'quantity'] }
+                    }
+                ],
+                where: whereClause,
+                attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'id', 'image']
+            });
+            if (recipeObj === null || recipeObj.length === 0) {
+                res.statusCode = 404;
+                let errObj = { "Error": "There are no more public recipes to display" };
+                res.json(errObj);
+            } else {
+                res.statusCode = 200;
+                res.json(recipeObj);
+            }
+        }
+        catch (error) {
+            res.statusCode = 500;
+            let errObj = { "Error": `Internal Server Error ${error}` }
+            res.json(errObj);
+        }
     }
+});
+
+
+recipeRoute.all('/publicRecipes', (req, res) => {
+    res.statusCode = 405;
+    let errObj = { "Error": "Method not allowed" }
+    res.json(errObj);
 });
 
 
 recipeRoute.route("/:id")
     .all((req, res, next) => {
-        let idNumber = parseInt(req.params.id);
-        if (req.params.id === undefined || isNaN(idNumber)) {
+        const error = paramsValidation(req.params, 'routeParams');
+        if (error) {
             res.statusCode = 400;
-            let errObj = { "Error": "Bad request query parameter not passed" }
+            let errObj = { "Error": `Validation Error - Route Parameter- ${error.message}` };
             res.json(errObj);
         } else {
             next();
@@ -567,6 +600,12 @@ recipeRoute.route("/:id")
             res.json(errObj);
         }
     })
+
+recipeRoute.all('/:id', (req, res) => {
+    res.statusCode = 405;
+    let errObj = { "Error": "Method not allowed" }
+    res.json(errObj);
+});
 
 
 
