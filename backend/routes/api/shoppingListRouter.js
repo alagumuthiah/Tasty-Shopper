@@ -1,5 +1,5 @@
 import express from 'express';
-import authenticate from '../../auth';
+import authenticate from '../../utils/auth';
 import { ShoppingList, Recipe, User, Ingredient } from '../../db/models';
 import { paramsValidation } from '../../utils/validation';
 

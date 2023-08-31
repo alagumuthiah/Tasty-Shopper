@@ -1,9 +1,10 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import authenticate from '../../auth';
+import authenticate from '../../utils/auth';
 import { User } from '../../db/models';
 import bcrypt from 'bcrypt';
 import { requestBodyValidation, paramsValidation } from '../../utils/validation';
+import { redisClient } from '../..';
 
 const userRoute = express.Router();
 const jwtConfig = require('../../db/config/config').jwtConfig;
@@ -31,7 +32,7 @@ userRoute.post('/signup', async function (req, res) {
         console.log(userName, firstName, lastName, email, password);
         const currUser = await User.findOne({ where: { userName: userName }, attributes: ['userName', 'firstName', 'lastName', 'hashedPassword', 'id'] });
         if (currUser !== null) {
-            res.statusCode = 403;
+            res.statusCode = 400;
             res.json({ "Error": `User with the username ${userName} already exist` });
         } else {
             try {
@@ -121,12 +122,16 @@ userRoute.post('/login', async function (req, res) {
 
 
 //Error handling to be implemented with proper error messages
-userRoute.delete('/logout', authenticate, function (req, res) {
-    console.log('Inside logout');
+userRoute.delete('/logout', authenticate, (async (req, res) => {
     const token = req.headers['access-token'];
-    console.log(token);
+    const tokenExp = req.tokenExp;
+    console.log(req.userName);
+    console.log(req.tokenExp);
+    console.log(tokenExp);
     try {
-        res.setHeader("access-token", "");
+        const token_key = `dl_${token}`;
+        await redisClient.set(token_key, token);
+        await redisClient.expireAt(token_key, tokenExp);
         res.statusCode = 200;
         res.send('Logged out successfully');
     }
@@ -135,8 +140,8 @@ userRoute.delete('/logout', authenticate, function (req, res) {
         let errObj = { "Error": `Internal Server Error ${error}` }
         res.json(errObj);
     }
-
-});
+}
+));
 
 userRoute.all('/signup', (req, res) => {
     res.status(405).send('Method not allowed');

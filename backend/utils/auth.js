@@ -1,24 +1,30 @@
 import jwt from 'jsonwebtoken';
 const jwtSecret = require('../db/config/config').jwtConfig.secret;
+import { redisClient } from '..';
 
-const authenticate = ((req, res, next) => {
-    console.log('Authenticate');
-    console.log(req.body);
+const authenticate = (async (req, res, next) => {
     const token = req.headers['access-token'];
-    console.log(token);
     if (token) {
-        jwt.verify(token, jwtSecret, function (err, decoded) {
-            if (err) {
-                res.status(401).json({ "Error": "Unauthorized-Invalid Token" });
-            } else {
-                console.log(decoded);
-                req.userName = decoded.userName;
-                next();
-            }
-        })
+        const deniedToken = await redisClient.get(`dl_${token}`);
+        if (deniedToken) {
+            res.statusCode = 401;
+            res.json({ "Error": "Unauthorized-Invalid Token" });
+        } else {
+            jwt.verify(token, jwtSecret, function (err, decoded) {
+                console.log('token veriies');
+                if (err) {
+                    res.status(401).json({ "Error": "Unauthorized-Invalid Token" });
+                } else {
+                    req.userName = decoded.userName;
+                    req.tokenExp = decoded.exp;
+                    next();
+                }
+            })
+        }
+
     } else {
-        res.statsCode = 403;
-        res.json({ "Error": "You are not logged in yet, please login" });
+        res.statusCode = 401;
+        res.json({ "Error": "No Token Provided" });
     }
 })
 

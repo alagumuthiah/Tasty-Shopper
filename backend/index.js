@@ -6,12 +6,11 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
 import bodyParser from 'body-parser';
-import upload from './uploadFile';
-import { ValidationError } from 'express-json-validator-middleware';
 import shoppingListRoute from './routes/api/shoppingListRouter';
+import * as redis from "redis";
 
 const app = express();
-
+export let redisClient = null;
 const corsOption = {
     'exposedHeaders': 'access-token'
 };
@@ -24,22 +23,29 @@ app.use('/recipes', recipeRoute);
 app.use('/ingredients', ingredientRoute);
 app.use('/users', userRoute);
 app.use('/shoppingList', shoppingListRoute);
-
-
 app.use((error, req, res, next) => {
     console.log(error);
-    console.log(req.body);
-    console.log(error.ValidationErrors);
-    if (error instanceof ValidationError) {
-        res.status(400);
-        res.send({ "Error": `Form validation Error ${error.validationErrors}` });
-    } else {
+    console.log('Else');
+    res.status(400);
+    res.send({ "Error": error.message });
+
+});
+
+(async () => {
+    redisClient = redis.createClient();
+    redisClient.on("error", (error) => {
+        console.log('Redis error');
         console.log(error);
-        console.log('Else');
-        res.status(400);
-        res.send({ "Error": "User data format error" });
-    }
-})
+    });
+
+    redisClient.on("connect", () => {
+        console.log("Redix connected");
+    });
+
+    await redisClient.connect();
+})();
+
+
 
 app.listen(3000, () => { console.log('Server listening'); });
 

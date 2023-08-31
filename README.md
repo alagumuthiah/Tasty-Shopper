@@ -17,9 +17,11 @@ To run this Application locally:
 5. Create the database using sequelize - `npx sequelize db:create`
 6. Run `npx sequelize db:migrate` to migrate the database.
 7. Run `npx sequelize db:seed:all` to seed the database(populate the data)
-8. Run npm start in the backend folder to start our Express server.
-9. run npm start in the frontend folder to start the React frontend server.
-10. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+8. Install a Redis server using `brew install redis`.
+9. Start the redis server using the command - ` brew services start redis`
+10. Run npm start in the backend folder to start our Express server.
+11. run npm start in the frontend folder to start the React frontend server.
+12. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
 ## Technologies Used
 
@@ -33,6 +35,7 @@ To run this Application locally:
 - Node JS
 - PostgreSQL
 - Sequelize
+- Redis
 
 ## Features of the App
 
