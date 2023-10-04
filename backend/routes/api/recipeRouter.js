@@ -87,85 +87,77 @@ recipeRoute.route("/")
     //     -> create entries in Ingredient table if not present
     //     -> create entries in RecipeIngredient table
     .post(authenticate, upload.single('recipeImg'), async (req, res, next) => {
+        console.log(req.body.recipeBody);
         let jsonRecipeFormat = JSON.parse(req.body.recipeBody);
+        console.log(jsonRecipeFormat);
         const error = requestBodyValidation(jsonRecipeFormat, 'recipeSchema');
         if (error) {
             res.statusCode = 400;
             let errObj = { "Error": `Validation Error - ${error.message}` };
             res.json(errObj);
         } else {
-            const createRecipeIngredientTransaction = await db.sequelize.transaction();
-            const createRecipeIngredientModelTrans = await db.sequelize.transaction();
+            /*
+            1.First get the user details based on the username attached to the request
+            2.Verify the userId in the req body is equal to the userId of the aunthenticated USer
+            3.To the User create Recipe - await User.createRecipe(<recipe object from req Body>)
+            4.Fecth the Ingredient id of all Ingredients using Op.or operator with attributes only ids - returns an array of ingredients
+            5.then many-to-many association - use  await Recipe.addIngredients([array of ingredient ids] )
+            6.Return the recipe Object created as json
+            */
             try {
-                const recipeRequest = { ...jsonRecipeFormat };
-                let fileName = req.file.filename;
-                var recipeDetails = await Recipe.create({
-                    title: recipeRequest.title,
-                    cuisine: recipeRequest.cuisine,
-                    servings: recipeRequest.servings,
-                    isPublic: recipeRequest.isPublic,
-                    instruction: recipeRequest.instruction,
-                    image: fileName,
-                    userId: recipeRequest.userId
-                }, { transaction: createRecipeIngredientTransaction });
-                var recipeId = recipeDetails.id; // id of the recipe created
-                const ingredientList = recipeRequest.ingredients;
-
-                var ingredients = await Promise.all(ingredientList.map(async (ingredient) => { //need to check if ingredient has to be part of the transaction
-                    let [ingredientDetail, created] = await Ingredient.findOrCreate({
-                        where: { name: ingredient.name },
-                        transaction: createRecipeIngredientTransaction
-                    });
-                    return { id: ingredientDetail.id, quantity: ingredient.quantity, unit: ingredient.unit };
-                }));
-                await createRecipeIngredientTransaction.commit();
-            }
-            catch (error) {
-                await createRecipeIngredientTransaction.rollback();
-                res.statusCode = 500;
-                let errObj = { "Error": `Internal Server Error ${error}` }
-                res.json(errObj);
-            }
-
-            try {
-                await Promise.all(ingredients.map(async (ingredient) => {
-                    const recipeIngredientDetail = await RecipeIngredient.create({
-                        IngredientId: ingredient.id,
-                        RecipeId: recipeId,
-                        quantity: ingredient.quantity,
-                        unit: ingredient.unit
-                    }, { transaction: createRecipeIngredientModelTrans });
-                }));
-                await createRecipeIngredientModelTrans.commit();
-
-
-            }
-
-            catch (error) {
-                await createRecipeIngredientModelTrans.rollback();
-                res.statusCode = 500;
-                let errObj = { "Error": `Internal Server Error ${error}` }
-                res.json(errObj);
-            }
-
-            try {
-                const newRecipeObj = await Recipe.findByPk(recipeId, {
-                    include: [
-                        {
-                            model: User,
-                            attributes: ['firstName', 'lastName', 'userName', 'id']
-                        },
-                        {
-                            model: Ingredient,
-                            attributes: ['name'],
-                            through: { attributes: ['unit', 'quantity'] }
-                        },
-                    ],
-                    attributes: ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'image', 'id']
+                const currUser = await User.findOne({
+                    where: {
+                        userName: req.userName
+                    },
+                    attributes: ['firstName', 'lastName', 'userName', 'id']
                 });
-                res.statusCode = 201;
-                console.log(newRecipeObj);
-                res.json(newRecipeObj);
+                const recipeRequest = { ...jsonRecipeFormat };
+                if (currUser.id === recipeRequest.userId) {
+                    let fileName = req.file.filename;
+                    let newRecipe = await currUser.createRecipe({
+                        title: recipeRequest.title,
+                        cuisine: recipeRequest.cuisine,
+                        servings: recipeRequest.servings,
+                        isPublic: recipeRequest.isPublic,
+                        instruction: recipeRequest.instruction,
+                        image: fileName
+                    });
+                    const ingredientList = recipeRequest.ingredients;
+                    for (let i = 0; i < ingredientList.length; i++) {
+                        const currIngredient = ingredientList[i];
+                        const ingredientDetail = await Ingredient.findOne({
+                            where: {
+                                name: currIngredient.name
+                            }
+                        });
+                        await newRecipe.addIngredient(ingredientDetail, {
+                            through: {
+                                'quantity': currIngredient.quantity,
+                                'unit': currIngredient.unit
+                            }
+                        });
+                    }
+                    res.statusCode = 201;
+                    const newRecipeObj = await Recipe.findByPk(newRecipe.id, {
+                        include: [
+                            {
+                                model: User,
+                                'sttributes': ['firstName', 'lastName', 'userName', 'id']
+                            }, {
+                                model: Ingredient,
+                                attributes: ['name'],
+                                through: { attributes: ['unit', 'quantity'] }
+                            },
+                        ],
+                        'attributes': ['title', 'cuisine', 'servings', 'isPublic', 'instruction', 'image', 'id']
+                    });
+                    res.json(newRecipeObj);
+
+                } else {
+                    res.statusCode = 400;
+                    let errObj = { "Error": "The userId in the request and the current user doesn't match" };
+                    res.json(errObj);
+                }
             }
             catch (error) {
                 res.statusCode = 500;

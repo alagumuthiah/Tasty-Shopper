@@ -11,7 +11,7 @@ const authenticate = (async (req, res, next) => {
             res.json({ "Error": "Unauthorized-Invalid Token" });
         } else {
             jwt.verify(token, jwtSecret, function (err, decoded) {
-                console.log('token veriies');
+                console.log('token verified');
                 if (err) {
                     res.status(401).json({ "Error": "Unauthorized-Invalid Token" });
                 } else {
